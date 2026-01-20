@@ -5,9 +5,7 @@ A comprehensive web application for managing transport company operations, built
 ## 📋 Overview
 Academic project for **Information Systems 2** module. This system handles complete logistics management including shipment tracking, driver assignment, invoicing, and real-time analytics.
 
-**Submission Date:** January 17, 2026  
-**Team Size:** 4 members  
-**Course Instructor:** R. Boudour
+
 
 ## ✨ Key Features
 
