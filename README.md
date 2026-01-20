@@ -1,65 +1,61 @@
-# 📦 Information System for a Transport & Delivery Company
+# 🚚 Transport & Delivery Management System
 
-## 📄 Project Description
-This project involves designing and developing a **complete web application** to optimize the logistical, commercial, and operational management of a national and international transport company.  
-The system centralizes and automates processes related to customers, shipments, deliveries, routes, drivers, vehicles, invoicing, payments, and package tracking.
+A comprehensive web application for managing transport company operations, built with Django.
 
+## 📋 Overview
+Academic project for **Information Systems 2** module. This system handles complete logistics management including shipment tracking, driver assignment, invoicing, and real-time analytics.
 
+**Submission Date:** January 17, 2026  
+**Team Size:** 4 members  
+**Course Instructor:** R. Boudour
 
----
+## ✨ Key Features
 
-##   Main Features
+| Module | Description |
+|--------|-------------|
+| **Favorites** | Personalized quick-access dashboard |
+| **Tables Management** | CRUD operations for Clients, Drivers, Vehicles, Destinations |
+| **Shipment Tracking** | End-to-end package tracking with automatic cost calculation |
+| **Route Planning** | Tour management with driver and vehicle assignment |
+| **Invoicing** | Automatic invoice generation with VAT (19%) |
+| **Analytics Dashboard** | Charts and reports for business insights |
+| **Incident Management** | Issue tracking and resolution system |
 
-### **Section 0: Favorites**
-Quick access to the most used features (customizable by the agent).
+## 🛠️ Technology Stack
+- **Backend:** Django 5.1+ (Python)
+- **Database:** PostgreSQL (development: SQLite)
+- **Frontend:** HTML5, CSS3, JavaScript
+- **Documentation:** LaTeX
+- **Version Control:** Git
 
-### **Section 1: Tables**
-Full management of main entities:
-- Clients
-- Drivers
-- Vehicles
-- Destinations
-- Service types
-- Pricing
+## 🚀 Quick Installation
 
-### **Section 2: Shipment Management & Tracking**
-- Shipment creation with automatic cost calculation
-- Real-time package tracking
-- Delivery route management
+### Prerequisites
+- Python 3.9+
+- PostgreSQL (optional for development)
 
-### **Section 3: Invoicing & Payments**
-- Automatic invoice generation (excl. tax, VAT, incl. tax)
-- Payment management and customer balances
-- Invoice and receipt printing
+### Setup Instructions
+```bash
+# 1. Clone repository
+git clone https://github.com/your-username/transport-system.git
+cd transport-system
 
-### **Section 4: Incident Management**
-- Incident recording and tracking
-- Automatic shipment status updates
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-### **Section 5: Complaint Management**
-- Centralization of customer complaints
-- Task assignment and treatment follow-up
+# 3. Install dependencies
+pip install -r requirements.txt
 
-### **Section 6: Analysis & Dashboards**
-- Commercial and operational statistics
-- Evolutive charts over 12 months or multiple years
-- Top clients, destinations, drivers, etc.
+# 4. Configure environment
+cp .env.example .env
+# Edit .env with your settings
 
----
+# 5. Run migrations
+python manage.py migrate
 
-## Optional Features
-1. **Forecasting & Advanced Analytics** (KPIs, trends, interactive maps)
-2. **Password reset** via email
+# 6. Create superuser
+python manage.py createsuperuser
 
----
-
-##Technologies Used
-- **Backend:** Django 
-- **Frontend:** HTML, CSS, JavaScript
-- **Database:** PostgreSQL / MySQL / SQLite
-- **Modeling:** UML (class diagrams, use case diagrams, etc.)
-- **Report:** Written in LaTeX
-
----
-
-## 📁 Repository Structure
+# 7. Run development server
+python manage.py runserver
