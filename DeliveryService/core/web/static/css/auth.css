@@ -1,0 +1,81 @@
+body {
+    font-family:inter ,sans-serif;
+}
+
+.auth-login{
+    background-color: #ffffff;
+    width: 380px;
+    margin: 80px auto;
+    padding: 40px;
+    border-radius: 10px;
+    
+}
+.auth-login h1 {
+    text-align: center;
+    margin-bottom: 5px;
+}
+.subtitle {
+    text-align: center;
+    color:#6c757d;
+    margin-bottom: 30px;
+}
+label {
+    color:#495057;
+    font-size: 16px;
+    margin-top: 15px;
+    display: block;
+}
+label span {
+    color: red;
+}
+.option {
+    display : flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+    
+}
+.option label {
+    font-size: 14px;
+    margin-top: 0;
+}
+.remember {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.forgot {
+    text-decoration: none;
+    color: #0d6dfd;
+}
+.forgot:hover {
+    text-decoration: underline;
+}
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #0d6dfd;
+    outline: none;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #0d6dfd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+button:hover {
+    background-color: #0b5ed7;
+}
+

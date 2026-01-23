@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'core',
+
+    # Ensure templates inside core/web/templates/ are discoverable
+    'core.web',
 ]
 
 MIDDLEWARE = [
@@ -56,7 +59,10 @@ ROOT_URLCONF = 'DeliveryService.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # Optional: global templates dir (keep if you want)
+            BASE_DIR / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

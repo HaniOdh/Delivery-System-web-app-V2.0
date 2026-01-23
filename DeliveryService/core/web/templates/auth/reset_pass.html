@@ -1,0 +1,23 @@
+{% extends "base/base.html" %}
+{% block title %}Reset Password - Delivery System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center " style="background-color:#ffffff; margin-top: 120px;margin-bottom: 170px;">
+    <div class="bg-white p-4" style="width: 380px;">
+        <h2 class="text-center fw-bold mb-2">Forgot Password?</h2>
+        <p class="text-center text-muted mb-4">Enter your email and we'll send a link to reset your password</p>
+        <form method="post" >
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_email" class="form-label fw-medium">Email <span class="text-danger">*</span></label>
+                <input type="text" name="email" id="id_email" class="form-control" placeholder="Email" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Send Reset Link</button>
+
+        </form>
+        <p class="text-center mt-3">Return to <a href="{% url 'login' %}">Login</a></p>
+    </div>
+
+        
+</div>
+{% endblock %}

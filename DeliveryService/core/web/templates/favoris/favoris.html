@@ -1,0 +1,107 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block title %}Favoris - Delivery System{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/favoris.css' %}">
+
+<style>
+
+    .main-content { background-color: #fff !important; }
+</style>
+<div class="bloc-favoris">
+    <section class="fav-header">
+
+        <div class="header-top">
+            <div class="left">
+                <h2><b>Favoris</b></h2>
+            </div>
+
+            <div class="right">
+                <button class="btn primary" onclick="openModal()">+ Personnaliser</button>
+            </div>
+        </div>
+
+        <div class="fav-description">
+            <p class="text-muted">
+                Vos fonctionnalités les plus utilisées, personnalisables et réorganisables selon vos besoins.
+            </p>
+        </div>
+
+    </section>
+    <section class="fav-cards">
+        <div class="card">
+            <button class="remove-btn" title="Supprimer">×</button>
+            <div class="icon">📦</div>
+            <h3>Nouvelle expédition</h3>
+            <p>Créer et planifier une nouvelle expédition</p>
+        </div>
+
+        <div class="card">
+            <button class="remove-btn" title="Supprimer">×</button>
+            <div class="icon">🔗</div>
+            <h3>Consultation des expéditions</h3>
+            <p>Voir et gérer toutes les tournées actives</p>
+        </div>
+
+        <div class="card">
+            <button class="remove-btn" title="Supprimer">×</button>
+            <div class="icon">💳</div>
+            <h3>Facturation</h3>
+            <p>Accéder aux factures et paiements</p>
+        </div>
+        <div class="card">
+            <button class="remove-btn" title="Supprimer">×</button>
+            <div class="icon"></div>
+            <h3>Suivi des colis</h3>
+            <p>Suivre en temps réel la position des colis</p>
+        </div>
+    </section>
+    <div class="fav-footer">
+        <h3 class="icon"> How to use and manage favorites</h3>
+        <ul>
+            <li>Hover a card and click on the X icon to remove it .</li>
+            <li>Click on "Personnaliser" to add other functionalities .</li>
+            <li>Your preferences are automatically saved.</li>
+        </ul>
+    </div>
+
+</div>
+<!--
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h2>Personnaliser les favoris</h2>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Sélectionnez les fonctionnalités à ajouter à vos favoris :</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <input type="checkbox" id="feature1" name="feature1" value="Nouvelle expédition">
+                    <label for="feature1">Nouvelle expédition</label>
+                </div>
+                <div class="feature-item">
+                    <input type="checkbox" id="feature2" name="feature2" value="Consultation des expéditions">
+                    <label for="feature2">Consultation des expéditions</label>
+                </div>
+                <div class="feature-item">
+                    <input type="checkbox" id="feature3" name="feature3" value="Facturation">
+                    <label for="feature3">Facturation</label>
+                </div>
+                <div class="feature-item">
+                    <input type="checkbox" id="feature4" name="feature4" value="Suivi des colis">
+                    <label for="feature4">Suivi des colis</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn secondary" onclick="closeModal()">Annuler</button>
+            <button class="btn primary" onclick="saveFavorites()">Enregistrer</button>
+        </div>
+    </div>
+</div>  -->
+<script src="{% static 'js/favoris.js' %}"></script>
+{% endblock %}

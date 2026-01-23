@@ -1,0 +1,111 @@
+* { box-sizing: border-box; }
+
+
+body{
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+
+.app-layout{
+    display: flex;
+    min-height: 100vh;
+}
+.sidebar {
+    width:260px;
+    height: 100vh;
+    background-color: white;
+    border-right: 1px soli;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    flex: 0 0 260px; /* sidebar fixe */
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    border-right: 1px solid #e9ecef; 
+    box-shadow: none;
+}
+.profile {
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 20px;
+}
+.profile img {
+    width: 70px;
+    height: 70px;
+    padding: 12px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+.profile h3 {
+    margin: 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+.profile p {
+    margin: 0;
+    font-size: 12px;
+    color: #6c757d;
+}
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    margin-top: -220px;
+}
+.menu-item {
+    text-decoration: none;
+    font-size: 14px;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 3px;
+    transition: 0.3s;
+}
+.menu-item:hover {
+    background-color: #f0f4ff;
+}
+.menu-item.active {
+    background-color: #2563eb;
+    color: white;
+    
+}
+.logout button {
+    width: 100%;
+    height: 40px;
+    font-size: 15px;
+    line-height: 40px;
+    text-align: center;
+    border: 1px solid #e57373;
+    border-radius: 8px;
+    background-color: white;
+    color: #e53935;
+    cursor: pointer;
+}
+.logout button:hover {
+    background-color: #ffecec;
+}
+.main-content {
+    flex: 1 1 auto;
+    min-width: 0;        /* évite que le contenu déborde/soit “coupé” */
+    width: auto;         /* remplace calc(100vw - 260px) */
+    padding: 20px;
+    overflow: auto;
+    background-color: #fff ;
+    margin-left: 260px;     /* même largeur que .sidebar */
+    min-height: 100vh;
+    border-left: 1px solid #e9ecef;
+}
+
+/* Si tu utilises vraiment le wrapper flex dans home.html, on annule le "fixed" */
+.app-layout .sidebar{
+    position: static;
+    height: auto;
+}
+
+.app-layout .main-content{
+    margin-left: 0;
+}
+

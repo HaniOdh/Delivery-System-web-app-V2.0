@@ -1,0 +1,9 @@
+{% extends "base/base.html" %}
+{% block title %}Logout - Delivery System{% endblock %}
+{% block content %}
+<div class="logout-message">
+    <h2> logged out </h2>
+    <h2>You have been logged out successfully.</h2>
+    <p><a href="{% url 'login' %}">Click here</a> to log in again.</p>
+</div>  
+{% endblock %}
