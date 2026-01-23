@@ -2,12 +2,12 @@
 
 A comprehensive web application for managing transport company operations, built with Django.
 
-## 📋 Overview
+## Overview
 Academic project for **Information Systems 2** module. This system handles complete logistics management including shipment tracking, driver assignment, invoicing, and real-time analytics.
 
 
 
-## ✨ Key Features
+## Key Features
 
 | Module | Description |
 |--------|-------------|
@@ -19,14 +19,14 @@ Academic project for **Information Systems 2** module. This system handles compl
 | **Analytics Dashboard** | Charts and reports for business insights |
 | **Incident Management** | Issue tracking and resolution system |
 
-## 🛠️ Technology Stack
+## Technology Stack
 - **Backend:** Django 5.1+ (Python)
 - **Database:** PostgreSQL (development: SQLite)
 - **Frontend:** HTML5, CSS3, JavaScript
 - **Documentation:** LaTeX
 - **Version Control:** Git
 
-## 🚀 Quick Installation
+## Quick Installation
 
 ### Prerequisites
 - Python 3.9+
