@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Delivery System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/client.css' %}">
+    <!-- Google Font : Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    
+</head>
+<body>
+    <!-- TEMPLATE: core/web/templates/home.html -->
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="profile">
+                <img src="{% static 'images/avatar.png' %}" alt="user">
+                <h3>{{ user.first_name |default:"Bouali " }} {{ user.last_name |default:"Mo9nis"}}</h3>
+                <p class="text-muted">{{ user.email |default:"mwines@123.com"}}</p>
+            </div>
+
+            <nav class="nav-menu">
+
+                <!-- Favoris -->
+                <a href="{% url 'favorite_list' %}" class="menu-item {% if request.resolver_match.url_name == 'favorite_list' %}active{% endif %}"> <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.93774 1.1326C9.2045 0.59216 9.97516 0.59216 10.2419 1.1326L12.4169 5.53888C12.5228 5.7533 12.7272 5.90198 12.9638 5.93657L17.8288 6.64766C18.4251 6.73481 18.6627 7.46773 18.2311 7.88817L14.7119 11.3158C14.5404 11.4829 14.4621 11.7237 14.5026 11.9597L15.333 16.8011C15.4348 17.3952 14.8112 17.8483 14.2777 17.5677L9.92832 15.2804C9.71642 15.169 9.46325 15.169 9.25135 15.2804L4.90195 17.5677C4.36844 17.8483 3.74482 17.3953 3.84672 16.8011L4.67709 11.9597C4.71756 11.7237 4.63927 11.4829 4.46774 11.3158L0.948608 7.88817C0.516939 7.46773 0.754579 6.73481 1.35083 6.64766L6.21583 5.93657C6.45243 5.90198 6.65691 5.7533 6.76275 5.53888L8.93774 1.1326Z" stroke="#212529" stroke-width="1.45443" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>    Favoris</a>
+
+                <!-- Tables: pointe vers une page existante (ex: liste clients) -->
+                <a href="{% url 'table' %}" class="menu-item {% if request.path|slice:':7' == '/table/' %}active{% endif %}"> <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2.12826e-05 2.90885C2.12826e-05 1.30234 1.30236 0 2.90888 0L17.4531 0C19.0597 0 20.362 1.30234 20.362 2.90885L20.362 17.4531C20.362 19.0597 19.0596 20.362 17.4531 20.362L2.90886 20.362C1.30233 20.362 -7.80212e-06 19.0596 0 17.4531L2.12826e-05 2.90885ZM2.90888 1.45443C2.10562 1.45443 1.45445 2.1056 1.45445 2.90885L1.45445 6.54492L18.9076 6.54492V2.90885C18.9076 2.1056 18.2564 1.45443 17.4531 1.45443L2.90888 1.45443ZM18.9076 7.99935H13.8171L13.8171 12.3626L18.9076 12.3626L18.9076 7.99935ZM18.9076 13.8171L13.8171 13.8171L13.8171 18.9076H17.4531C18.2564 18.9076 18.9076 18.2564 18.9076 17.4531L18.9076 13.8171ZM12.3627 18.9076L12.3627 13.8171H7.9994L7.99937 18.9076L12.3627 18.9076ZM6.54495 18.9076L6.54497 13.8171L1.45444 13.8171L1.45443 17.4531C1.45442 18.2564 2.10559 18.9076 2.90886 18.9076H6.54495ZM1.45445 12.3626L6.54498 12.3626L6.54498 7.99935L1.45445 7.99935L1.45445 12.3626ZM7.9994 7.99935L7.9994 12.3626H12.3627L12.3627 7.99935L7.9994 7.99935Z" fill="currentColor"/>
+                    </svg>    Tables</a>
+                <a href="{% url 'expedition_list' %}" class="menu-item {% if request.path|slice:':12' == '/expedition/' %} active{% endif %}"> <svg width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.6354 2.90885C11.6354 2.1056 10.9842 1.45443 10.181 1.45443H2.90885C2.1056 1.45443 1.45443 2.1056 1.45443 2.90885V11.6354C1.45443 12.4387 2.1056 13.0898 2.90885 13.0898C3.31048 13.0898 3.63607 13.4154 3.63607 13.8171C3.63607 14.2187 3.31048 14.5443 2.90885 14.5443C1.30234 14.5443 1.40553e-07 13.2419 0 11.6354V2.90885C3.51389e-08 1.30234 1.30234 0 2.90885 0H10.181C11.7875 0 13.0898 1.30234 13.0898 2.90885V13.8171C13.0898 14.2187 12.7643 14.5443 12.3626 14.5443H8.72656C8.32493 14.5443 7.99935 14.2187 7.99935 13.8171C7.99935 13.4154 8.32493 13.0898 8.72656 13.0898H11.6354V2.90885Z" fill="#343A40"/>
+                    <path d="M13.8171 13.0898C14.2187 13.0898 14.5443 13.4154 14.5443 13.8171C14.5443 14.2187 14.2187 14.5443 13.8171 14.5443H10.181C9.77936 14.5443 9.45378 14.2187 9.45378 13.8171C9.45378 13.4154 9.77936 13.0898 10.181 13.0898H13.8171ZM18.9076 12.3626V8.90268C18.9075 8.51707 18.7541 8.14704 18.4815 7.87436L15.3965 4.78938C15.1238 4.5167 14.7538 4.36337 14.3681 4.36328H12.3626C11.961 4.36328 11.6354 4.0377 11.6354 3.63607C11.6354 3.23444 11.961 2.90885 12.3626 2.90885H14.3681C15.1395 2.90894 15.8794 3.21562 16.4248 3.76106L19.5098 6.84603C20.0552 7.39147 20.3619 8.13133 20.362 8.90268V12.3626C20.362 13.5675 19.3852 14.5443 18.1803 14.5443C17.7787 14.5443 17.4531 14.2187 17.4531 13.8171C17.4531 13.4655 17.7025 13.1717 18.034 13.104L18.3266 13.0756C18.6582 13.008 18.9076 12.7142 18.9076 12.3626Z" fill="#343A40"/>
+                    <path d="M17.4531 14.5443C17.4531 13.741 16.802 13.0898 15.9987 13.0898C15.1954 13.0898 14.5443 13.741 14.5443 14.5443C14.5443 15.3475 15.1954 15.9987 15.9987 15.9987C16.802 15.9987 17.4531 15.3475 17.4531 14.5443ZM18.9076 14.5443C18.9076 16.1508 17.6052 17.4531 15.9987 17.4531C14.3922 17.4531 13.0898 16.1508 13.0898 14.5443C13.0898 12.9378 14.3922 11.6354 15.9987 11.6354C17.6052 11.6354 18.9076 12.9378 18.9076 14.5443Z" fill="#343A40"/>
+                    <path d="M7.99935 13.8171C7.99935 12.6122 7.0226 11.6354 5.81771 11.6354C4.61282 11.6354 3.63607 12.6122 3.63607 13.8171C3.63607 15.0219 4.61282 15.9987 5.81771 15.9987C7.0226 15.9987 7.99935 15.0219 7.99935 13.8171ZM9.45378 13.8171C9.45378 15.8252 7.82585 17.4531 5.81771 17.4531C3.80956 17.4531 2.18164 15.8252 2.18164 13.8171C2.18164 11.8089 3.80956 10.181 5.81771 10.181C7.82585 10.181 9.45378 11.8089 9.45378 13.8171Z" fill="#343A40"/>
+                    </svg>    Gestion Expéditions</a>
+                <a href="#" class="menu-item"> Facturation et Paiements</a>
+                <a href="{% url 'incident_list' %}" class="menu-item {% if request.path|slice:':10' == '/incident/' %}active{% endif %}"> Gestion Incidents</a>
+                <a href="#" class="menu-item"> Gestion Réclamations</a>
+                <a href="#" class="menu-item"> Dashboards</a>
+                
+            </nav>
+            <div class="logout">
+                <button>Logout</button>
+            </div>
+                
+        </aside>    
+        <main class="main-content">
+            {% block content %}
+            
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap JS (inclut Popper) -> nécessaire pour dropdown -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            crossorigin="anonymous"></script>
+
+    <script>
+    // Force l'activation des dropdowns (si l'auto-init ne marche pas ou si scripts doublés avant)
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.bootstrap || !window.bootstrap.Dropdown) return;
+        document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+            bootstrap.Dropdown.getOrCreateInstance(el);
+        });
+    });
+    </script>
+</body>
+</html>

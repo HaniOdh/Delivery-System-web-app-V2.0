@@ -16,10 +16,32 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.utils.timezone import now
+import django
+
+
+@require_GET
+def health(_request):
+    return JsonResponse({
+        "status": "ok",
+        "service": "DeliveryService",
+        "django": django.get_version(),
+        "time": now().isoformat(),
+    })
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('core.api.urls'))
-    
-   
+
+    path('api/health/', health, name='api-health'),
+    path('api/health', health),  # alias (no trailing slash)
+    path('health/', health, name='health'),
+    path('health', health),      # alias (no trailing slash)
+
+    path('api/', include('core.api.urls')),
+
+    # Frontend (templates) -> includes favorites/favoris via core.web.urls
+    path('', include('core.web.urls')),
 ]

@@ -21,6 +21,8 @@ class Destination(models.Model):
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     zone = models.CharField(max_length=50)
+    base_rate = models.FloatField()
+    
 
     def __str__(self):
         return f"{self.city}, {self.country}"
