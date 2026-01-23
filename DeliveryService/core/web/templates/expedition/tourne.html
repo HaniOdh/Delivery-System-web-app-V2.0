@@ -1,43 +1,15 @@
 {% extends "home.html" %}
 {% load static %}
 
-{% block title %}Gestion Expéditions - Delivery System{% endblock %}
+{% block title %}Tournee - Delivery System{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/expedition.css' %}">
+<link rel="stylesheet" href="{% static 'css/tourne.css' %}">
 <style>
 
     .main-content { background-color: #fff !important; }
-
-    .status{
-        text-align: center;
-    }
-    .status-disponible {
-        background-color: #d1fae5;
-        color: #065f46;
-        
-    }
-    .status-offline {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        
-
-    }
-    .status-badge{
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 999px; /* pill / badge */
-        font-size: 0.85rem;
-        font-weight: 500;
-        line-height: 1.2;
-    }
-    .status-en_mission {
-        background-color: #e0f2fe;
-        color: #0369a1;
-        
-    }
-
 </style>
+
 <div class="tables-top">
     <div class="table-header">
             <h2><b>Gestion Expéditions</b></h2>
@@ -49,6 +21,51 @@
             <option value="{% url 'tournee_view' %}">Tournee</option>
     </select>
 </div>
+<div class="stats-cards-row">
+    <div class="stat-card-modern">
+        <div class="stat-header">
+            <span class="stat-label">Nombre Tournee</span>
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-truck"></i>
+            </div>
+        </div>
+        <div class="stat-value-large">{{ stats.tournees|default:"10" }}</div>
+        <div class="stat-sublabel">Tournees</div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div class="stat-header">
+            <span class="stat-label">Total Distance</span>
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-geo-alt"></i>
+            </div>
+        </div>
+        <div class="stat-value-large">{{ stats.distance|default:"4000" }} km</div>
+        <div class="stat-sublabel">Enregistrés</div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div class="stat-header">
+            <span class="stat-label">Carburent</span>
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-fuel-pump"></i>
+            </div>
+        </div>
+        <div class="stat-value-large">{{ stats.carburant|default:"145" }}L</div>
+        <div class="stat-sublabel">Enregistrés</div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div class="stat-header">
+            <span class="stat-label">Expeditions</span>
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-box-seam"></i>
+            </div>
+        </div>
+        <div class="stat-value-large">{{ stats.expeditions|default:"14" }}</div>
+        <div class="stat-sublabel">Livrées</div>
+    </div>
+</div>
 <section class="table-section">
     <div class="table-actions">
         <form method="get" class="form-actions">
@@ -58,7 +75,7 @@
                     <option value="" disabled {% if not request.GET.filter %}selected{% endif %}>Sort By</option>
                     <option value="desc" {% if request.GET.filter == "desc" %}selected{% endif %}>Z-A</option>
                     <option value="asc" {% if request.GET.filter == "asc" %}selected{% endif %}>A-Z</option>
-                    <option value="client" {% if request.GET.filter == "client" %}selected{% endif %}>A-Z</option>
+                    <option value="client" {% if request.GET.filter == "Date" %}selected{% endif %}>A-Z</option>
                     
                 </select>
             </div>
@@ -72,7 +89,7 @@
                 </button>
 
                 <button type="button" class="btn primary">
-                    + Add Expedition
+                    + Add Tournee
                 </button>
             </div>
         </form>
@@ -84,86 +101,102 @@
             <thead>
                 
                 <tr>
-                    <th>Expedition ID</th>
-                    <th>Client</th>
-                    <th>Destination</th>
-                    <th>Service</th>
-                    <th>Poid</th>
-                    <th>Volume</th>
-                    <th>Montant</th>
+                    <th>Tournee ID</th>
+                    <th>Date</th>
+                    <th>Driver</th>
+                    <th>Vehicule</th>
+                    <th>Nb Exp </th>
+                    <th>Distance </th>
+                    <th>Duree</th>
+                    <th>Carb</th>
+                    <th>Incd</th>
                     <th style="width: 90px;">Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for expedition in page_obj %}
+                {% for tour in page_obj %}
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="{{ expedition.id }}"></td>
-                    <td>{{ expedition.client }}</td>
-                    <td>{{ expedition.destination }}</td>
-                    <td>{{ expedition.service }}</td>
-                    <td>{{ expedition.poid }} kg</td>
-                    <td>{{ expedition.volume }} m³</td>
-                    <td>{{ expedition.montant }}</td>
+                    <!-- Put the ID in its cell and keep the checkbox in the same cell -->
+                    <td class="id-col"><input type="checkbox" value="{{ tour.id }}"><span class="row-id">{{ tour.id }}</span></td>
+                    <td>{{ tour.tour_date }}</td>
+                    <td>{{ tour.driver }}</td>
+                    <td>{{ tour.vehicle }}</td>
+                    <td>{{ tour.nb_exp }}</td>
+                    <td>{{ tour.distance }}</td>
+                    <td>{{ tour.duration }}</td>
+                    <td>{{ tour.carb }}</td>
+                    <td>{{ tour.incd }}</td>
                     <td class="status">
-                        {% if expedition.status == "disponible" %}
-                            <span class="status-badge status-disponible">{{ expedition.status }}</span>
-                        {% elif expedition.status == "offline" %}
-                            <span class="status-badge status-offline">{{ expedition.status }}</span>
-                        {% elif expedition.status == "en_mission" %}
-                            <span class="status-badge status-en_mission">{{ expedition.status }}</span>
+                        {% if tour.status == "disponible" %}
+                            <span class="status-badge status-disponible">{{ tour.status }}</span>
+                        {% elif tour.status == "offline" %}
+                            <span class="status-badge status-offline">{{ tour.status }}</span>
+                        {% elif tour.status == "en_mission" %}
+                            <span class="status-badge status-en_mission">{{ tour.status }}</span>
                         {% else %}
-                            <span class="status-badge">{{ expedition.status }}</span>
+                            <span class="status-badge">{{ tour.status }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td class="id-col"><input type="checkbox"></td>
-                    <td>Client Test 1</td>
-                    <td>Alger</td>
-                    <td>Express</td>
-                    <td>12 kg</td>
-                    <td>0.8 m³</td>
-                    <td>2500 DA</td>
+                    <!-- ID cell with checkbox; align remaining cells to headers -->
+                    <td class="id-col"><input type="checkbox"><span class="row-id">1</span></td>
+                    <td>12/02/2026</td>
+                    <td>9edor Ibo3li</td>
+                    <td>Truck 01</td>
+                    <td>5</td>
+                    <td>150 km</td>
+                    <td>3h</td>
+                    <td>20L</td>
+                    <td>0</td>
                     <td class="status">
                         <span class="status-badge status-disponible">disponible</span>
                     </td>
                 </tr>
 
                 <tr>
-                    <td class="id-col"><input type="checkbox"></td>
-                    <td>Client Test 2</td>
-                    <td>Oran</td>
-                    <td>Standard</td>
-                    <td>5 kg</td>
-                    <td>0.3 m³</td>
-                    <td>1200 DA</td>
+                    <td class="id-col"><input type="checkbox"><span class="row-id">2</span></td>
+                    <td>15/02/2026</td>
+                    <td>Bo3li ali</td>
+                    <td>Truck 02</td>
+                    <td>8</td>
+                    <td>250 km</td>
+                    <td>5h</td>
+                    <td>30L</td>
+                    <td>1</td>
                     <td class="status">
                         <span class="status-badge status-en_mission">en_mission</span>
                     </td>
                 </tr>
 
                 <tr>
-                    <td class="id-col"><input type="checkbox"></td>
-                    <td>Client Test 3</td>
-                    <td>Constantine</td>
-                    <td>Economy</td>
-                    <td>20 kg</td>
-                    <td>1.5 m³</td>
-                    <td>4000 DA</td>
+                    <td class="id-col"><input type="checkbox"><span class="row-id">3</span></td>
+                    <td>18/02/2026</td>
+                    <td>Ahmed Ziri</td>
+                    <td>Truck 03</td>
+                    <td>10</td>
+                    <td>300 km</td>
+                    <td>6h</td>
+                    <td>40L</td>
+                    <td>2</td>
                     <td class="status">
                         <span class="status-badge status-offline">offline</span>
                     </td>
                 </tr>
 
                 <tr>
-                    <td class="id-col"><input type="checkbox"></td>
-                    <td>Client Test 4</td>
-                    <td>Blida</td>
-                    <td>Express</td>
-                    <td>8 kg</td>
-                    <td>0.6 m³</td>
-                    <td>1800 DA</td>
+                    <td class="id-col"><input type="checkbox"><span class="row-id">4</span></td>
+                    <td>20/02/2026</td>
+                    <td>Youssef Driouech</td>
+                    <td>Truck 04</td>
+                    <td>7</td>
+                    <td>200 km</td>
+                    <td>4h</td>
+                    <td>25L</td>
+                    <td>0</td>
+                    
+                    
                     <td class="status">
                         <span class="status-badge status-disponible">disponible</span>
                     </td>
@@ -172,7 +205,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="8">
+                    <td colspan="10">
                         <div class="pagination-footer">
                             <div class="pagination">
                                 {% if page_obj.has_previous %}
@@ -213,4 +246,5 @@
         </table>
     </div>
 </section>
+
 {% endblock %}

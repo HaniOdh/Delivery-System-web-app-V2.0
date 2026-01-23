@@ -42,7 +42,7 @@
                     </svg>    Gestion Expéditions</a>
                 <a href="#" class="menu-item"> Facturation et Paiements</a>
                 <a href="{% url 'incident_list' %}" class="menu-item {% if request.path|slice:':10' == '/incident/' %}active{% endif %}"> Gestion Incidents</a>
-                <a href="#" class="menu-item"> Gestion Réclamations</a>
+                <a href="{% url 'reclamation_view' %}" class="menu-item {% if request.resolver_match.url_name == 'reclamation_view' %}active{% endif %}"> Gestion Réclamations</a>
                 <a href="#" class="menu-item"> Dashboards</a>
                 
             </nav>

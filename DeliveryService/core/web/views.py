@@ -7,6 +7,8 @@ from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
 
 
+
+
 def home(request):
 	return render(request, "home.html")
 
@@ -296,3 +298,49 @@ def suivi_view(request):
 		return render(request, "expedition/suivi.html", ctx)
 	except TemplateDoesNotExist:
 		return render(request, "expedition/expedition.html", ctx)
+
+def tournee_view(request):
+	try:
+		Tour= apps.get_model("core", "Tour")
+	except LookupError as e:
+		raise Http404("Tournee model not found (check core/models/models.py).") from e
+	db_table = Tour._meta.db_table
+	if db_table not in connection.introspection.table_names():
+		page_obj = Paginator([], 10).get_page(request.GET.get("page"))
+		return render(
+			request,
+			"expedition/tourne.html",
+			{
+				"page_obj": page_obj,
+				"db_warning": (
+					f"Missing DB table '{db_table}'. Run makemigrations + migrate."
+				),
+			},
+		)
+
+	Tournees = Tour.objects.all().order_by("id")
+	page_obj = Paginator(Tournees, 10).get_page(request.GET.get("page"))
+	return render(request, "expedition/tourne.html", {"page_obj": page_obj})
+
+def reclamation_view(request):
+	try:
+		Complaint= apps.get_model("core", "Complaint")
+	except LookupError as e:
+		raise Http404("Reclamation model not found (check core/models/models.py).") from e
+	db_table = Complaint._meta.db_table
+	if db_table not in connection.introspection.table_names():
+		page_obj = Paginator([], 10).get_page(request.GET.get("page"))
+		return render(
+			request,
+			"reclamation/reclamation.html",
+			{
+				"page_obj": page_obj,
+				"db_warning": (
+					f"Missing DB table '{db_table}'. Run makemigrations + migrate."
+				),
+			},
+		)
+
+	Complaints = Complaint.objects.all().order_by("id")
+	page_obj = Paginator(Complaints, 10).get_page(request.GET.get("page"))
+	return render(request, "reclamation/reclamation.html", {"page_obj": page_obj})
