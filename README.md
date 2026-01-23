@@ -4,6 +4,9 @@ A comprehensive web application for managing transport company operations, built
 
 ## Overview
 Academic project for **Information Systems 2** module. This system handles complete logistics management including shipment tracking, driver assignment, invoicing, and real-time analytics.
+## Documentation
+Full documentation available in /docs/ folder.
+
 
 
 
@@ -30,7 +33,7 @@ Academic project for **Information Systems 2** module. This system handles compl
 
 ### Prerequisites
 - Python 3.9+
-- PostgreSQL (optional for development)
+- Django
 
 ### Setup Instructions
 ```bash
