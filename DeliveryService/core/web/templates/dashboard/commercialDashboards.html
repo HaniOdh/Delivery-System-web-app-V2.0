@@ -1,0 +1,291 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block title %}Dashboards - Delivery System{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/commercialDashboard.css' %}">
+<style>
+    .main-content { background-color: #fff !important; }
+</style>
+
+<div class="dashboard-management">
+    <div class="dashboard-header">
+        <h3><b>Dashboards</b></h3>
+        <p class="text-muted">Analyse detaillées commercial et operationnel.</p>
+    </div><!--The next select should be edited-->
+    <select name="dashboard" class="dashboard-select" onchange="if (this.value) { window.location.href =this.value; }">
+        <option value="{% url 'commercial_dashboard'%}" selected>Commercial</option>
+        <option value="{% url 'operational_dashboard'%}">Operationnel</option>
+    </select>
+
+    <section class="Dashboard-content">
+        <div class="statistics-overview">
+            
+            <div class="statistic-cards">
+                <div class="statistic-card ">
+                    <div class="card-header-stat">
+                        <h6>Top Clients Volume</h6>
+                    </div>
+                    <div class="top-clients-table-wrapper">
+                        {% if top_clients_volume %}
+                            <table class="top-clients-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Rang</th>
+                                        <th class="client-col">Client</th>
+                                        <th class="volume-col">Expéditions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for client in top_clients_volume|slice:":5" %}
+                                        <tr class="client-row">
+                                            <td class="rank-cell">
+                                                <span class="rank-badge">{{ forloop.counter }}</span>
+                                            </td>
+                                            <td class="client-cell">{{ client.name }}</td>
+                                            <td class="volume-cell">
+                                                <span class="volume-badge">{{ client.count }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="statistic-card ">
+                    <div class="card-header-stat">
+                        <h6>Top Clients Value</h6>
+                    </div>
+                    <div class="top-clients-value-wrapper">
+                        {% if top_clients_value %}
+                            <table class="top-clients-value-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Rang</th>
+                                        <th class="client-col">Client</th>
+                                        <th class="value-col">Revenu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for client in top_clients_value|slice:":5" %}
+                                        <tr class="client-row">
+                                            <td class="rank-cell">
+                                                <span class="rank-badge">{{ forloop.counter }}</span>
+                                            </td>
+                                            <td class="client-cell">{{ client.name }}</td>
+                                            <td class="value-cell">
+                                                <span class="value-badge">{% if client.total_value %}${{ client.total_value|floatformat:2 }}{% else %}$0.00{% endif %}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="statistic-card ">
+                    <div class="card-header-stat">
+                        <h6>Top Requested Destinations</h6>
+                    </div>
+                    <div class="top-destinations-wrapper">
+                        {% if top_destinations %}
+                            <table class="top-destinations-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Rang</th>
+                                        <th class="destination-col">Localisation</th>
+                                        <th class="destination-count-col">Expéditions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for destination in top_destinations|slice:":5" %}
+                                        <tr class="destination-row">
+                                            <td class="rank-cell">
+                                                <span class="rank-badge">{{ forloop.counter }}</span>
+                                            </td>
+                                            <td class="destination-cell">{{ destination.city }}, {{ destination.country }}</td>
+                                            <td class="destination-count-cell">
+                                                <span class="destination-badge">{{ destination.count }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="statistic-card ">
+                    <div class="card-header-stat">
+                        <h6>Commercial Year Graph</h6>
+                    </div>
+                    <div class="commercial-graph-wrapper">
+                        {% if monthly_analysis %}
+                            <div class="chart-container monthly-chart">
+                                <canvas id="monthlyAnalysisChart"></canvas>
+                            </div>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Monthly Analysis Chart
+    const monthlyCtx = document.getElementById('monthlyAnalysisChart');
+    if (monthlyCtx) {
+        const monthlyData = {{ monthly_analysis|safe }};
+        
+        if (monthlyData && monthlyData.length > 0) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const volumeData = monthlyData.map(m => m.volume);
+            const revenueData = monthlyData.map(m => m.revenue);
+            
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: [
+                        {
+                            label: 'Shipment Volume',
+                            data: volumeData,
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#0d6efd',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Revenue ($)',
+                            data: revenueData,
+                            borderColor: '#0b7a4d',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#0b7a4d',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Shipment Volume',
+                                color: '#0d6efd',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#0d6efd',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#e9ecef',
+                                drawBorder: false
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Revenue ($)',
+                                color: '#0b7a4d',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#0b7a4d',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+
+{% endblock %}
