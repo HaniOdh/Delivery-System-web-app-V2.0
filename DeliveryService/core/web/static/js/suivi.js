@@ -2,30 +2,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const checkboxes = document.querySelectorAll('.expedition-checkbox');
     const rows = document.querySelectorAll('.expedition-row');
 
-    const emptyState = document.getElementById('emptyState');
-    const detailsContent = document.getElementById('detailsContent');
+    // Gestion du modal historique
+    const historiqueBtn = document.querySelector('.history-btn');
+    const modal = document.getElementById('historiqueModal');
+    const closeBtn = document.getElementById('closeModal');
 
-    // AU DÉPART
-    emptyState.style.display = "flex";
-    detailsContent.style.display = "none";
-
+    // Gestion des checkboxes (votre code existant)
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function () {
-
             checkboxes.forEach(cb => {
                 if (cb !== this) cb.checked = false;
             });
-
-            if (this.checked) {
-                emptyState.style.display = "none";
-                detailsContent.style.display = "block";
-
-                // remettre l’onglet Détails par défaut
-                switchTab('details');
-            } else {
-                emptyState.style.display = "flex";
-                detailsContent.style.display = "none";
-            }
         });
     });
 
@@ -33,22 +20,47 @@ document.addEventListener('DOMContentLoaded', function () {
         row.addEventListener('click', function (e) {
             if (e.target.type !== 'checkbox') {
                 const checkbox = this.querySelector('.expedition-checkbox');
-                checkbox.checked = !checkbox.checked;
-                checkbox.dispatchEvent(new Event('change'));
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
             }
         });
     });
-});
 
-function switchTab(tabName) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-    if (tabName === 'details') {
-        document.querySelector('.tab:nth-child(1)').classList.add('active');
-        document.getElementById('detailsTab').classList.add('active');
-    } else {
-        document.querySelector('.tab:nth-child(2)').classList.add('active');
-        document.getElementById('historiqueTab').classList.add('active');
+    // Ouvrir le modal
+    if (historiqueBtn && modal) {
+        historiqueBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
     }
-}
+
+    // Fermer le modal avec le bouton X
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+
+    // Fermer le modal en cliquant en dehors
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    // Fermer avec la touche Échap
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+});
