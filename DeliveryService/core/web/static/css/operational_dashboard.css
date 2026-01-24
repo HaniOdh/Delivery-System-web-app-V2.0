@@ -1,0 +1,74 @@
+/* Operational Dashboard Styles */
+
+/* Dashboard Select Styling */
+.dashboard-select {
+    appearance: none;
+    padding: 10px 8px;
+    padding-right: 40px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 40px;
+}
+
+.dashboard-select:hover {
+    background-color: #2a2a2a;
+}
+
+.dashboard-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    background-color: #2a2a2a;
+}
+
+.dashboard-select option {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    padding: 8px;
+}
+
+/* Tour Analysis Chart Styles */
+.tour-analysis-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.tour-chart {
+    position: relative;
+    height: 300px;
+    margin-bottom: 10px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* No Data */
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+/* Responsive Design for Charts */
+@media (max-width: 768px) {
+    .tour-chart {
+        height: 250px;
+    }
+}

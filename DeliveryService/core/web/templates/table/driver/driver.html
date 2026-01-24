@@ -35,7 +35,74 @@
         color: #0369a1;
         
     }
+        .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+    }
 
+    .modal-content {
+        background: #fff;
+        width: 90%;
+        max-width: 450px;
+        margin: 5% auto;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .close-btn {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #999;
+        line-height: 20px;
+    }
+
+    .close-btn:hover {
+        color: #000;
+    }
+
+    .modal-content h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 22px;
+    }
+
+    .modal-content form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-content label {
+        margin-top: 12px;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #555;
+    }
+
+    .modal-content input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .modal-content input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .modal-content button[type="submit"] {
+        margin-top: 20px;
+    }
 </style>
 <div class ="tables-top">
     <div class="table-header">
@@ -44,7 +111,7 @@
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
             <option value="{% url 'client_list' %}" >Clients</option>
-              {% if  user.profile.role == 'admin' %}
+            {% if  user.profile.role == 'admin' %}
             <option value="{% url 'list_agents' %}" >Agents</option>
             {% endif %}
             <option value="{% url 'driver_list' %}" selected>Drivers</option>
@@ -70,7 +137,7 @@
                 </select>
             </div>
             <div class="right">
-                <button type="submit" class="btn danger">
+                <button type="button" class="btn danger">
                     <i class="fa-solid fa-trash"></i>
                 </button>
 
@@ -78,7 +145,7 @@
                     <i class="fa-solid fa-print"></i> Print
                 </button>
 
-                <button type="button" class="btn primary">
+                <button type="button" class="btn primary" id="AddDriverButton">
                     + Add Driver
                 </button>
             </div>
@@ -91,7 +158,12 @@
             <thead>
                 
                 <tr>
-                    <th>Driver ID</th>
+                    <th>
+                        <label>
+                            <input type="checkbox" id="selectAll">
+                            Driver ID
+                        </label>
+                    </th>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Phone Number</th>
@@ -100,30 +172,35 @@
                 </tr>
             </thead>
             <tbody>
-                {% for driver in page_obj %}
-                <tr>
-                    <td class="id-col">
-                        <input type="checkbox" name="selected" value="{{ driver.id }}">
-                        <span class="id-text">{{ driver.id }}</span>
-                    </td>
-                    <td>{{ driver.first_name }}</td>
-                    <td>{{ driver.last_name }}</td>
-                    <td>{{ driver.phone_number }}</td>
-                    <td>{{ driver.license_number }}</td>
-                    <td class="status"> 
-                        <span class="status-badge
-                            {% if driver.status == "disponible" %}status-disponible
-                            {% elif driver.status == "offline" %}status-offline
-                            {% elif driver.status == "en_mission" %}status-en_mission
+                {% if page_obj %}
+                    {% for driver in page_obj %}
+                    <tr>
+                        <td class="id-col">
+                            <input type="checkbox" name="selected_drivers" value="{{ driver.id }}">
+                            {{ driver.id }}
+                        </td>
+                        <td>{{ driver.first_name }}</td>
+                        <td>{{ driver.last_name }}</td>
+                        <td>{{ driver.phone_number }}</td>
+                        <td>{{ driver.license_number }}</td>
+                        <td class="status">
+                            {% if driver.status == 'disponible' %}
+                                <span class="status-badge status-disponible">Disponible</span>
+                            {% elif driver.status == 'offline' %}
+                                <span class="status-badge status-offline">Offline</span>
+                            {% elif driver.status == 'en_mission' %}
+                                <span class="status-badge status-en_mission">En mission</span>
+                            {% else %}
+                                <span class="status-badge">{{ driver.status }}</span>
                             {% endif %}
-                        ">{{ driver.status }}</span>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6">No drivers found.</td>
-                </tr>
-                {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">No drivers found.</td>
+                    </tr>
+                {% endif %}
             </tbody>
             <tfoot>
                 <tr>
@@ -170,4 +247,37 @@
     </div>
     
 </section>
+<div id="addDriverModal" class="modal">
+
+    <div class="modal-content">
+
+        <span class="close-btn" id="closeModal">&times;</span>
+
+        <h3>Add New Driver</h3>
+
+        <form id="addDriverForm">
+            {% csrf_token %}
+
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" required>
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" required>
+            <label for="phone">Phone Number:</label>
+            <input type="text" id="phone" name="phone" required>
+            <label for="license_number">License Number:</label>
+            <input type="text" id="license_number" name="license_number" required>
+            <label for="hire_date">Hire Date:</label>
+            <input type="date" id="hire_date" name="hire_date" required>
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+            <option value="disponible">Disponible</option>
+            <option value="indisponible">Indisponible</option>
+            </select>
+
+            <button type="submit" class="btn primary">Save Driver</button>
+        </form>
+
+    </div>
+</div>
+<script src="{% static 'js/driver.js' %}"></script>
 {% endblock %}

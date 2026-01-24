@@ -1,60 +1,55 @@
 {% extends "home.html" %}
 {% load static %}
 
-{% block title %}Incident Statistics - Delivery System{% endblock %}
+{% block title %}Dashboards - Delivery System{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/incident.css' %}">
+<link rel="stylesheet" href="{% static 'css/operational_dashboard.css' %}">
 <style>
     .main-content { background-color: #fff !important; }
 </style>
 
-<div class="incident-management">
-    <div class="incident-header">
-        <h3><b>Gestion Incidents</b></h3>
-        <p class="text-muted">Ajouter, éditer et gérer les incidents tout en un seul endroit .</p>
+<div class="dashboard-management">
+    <div class="dashboard-header">
+        <h3><b>Dashboards</b></h3>
+        <p class="text-muted">Analyse detaillées commercial et operationnel.</p>
     </div>
-    <select name="incident" class="incident-select" onchange="if (this.value) { window.location.href =this.value; }">
-        <option value="{% url 'incident_list'%}" >Historique</option>
-        <option value="{% url 'incident_statistics' %}" selected>Statistique</option>
-        
+    <select name="dashboard" class="dashboard-select" onchange="if (this.value) { window.location.href =this.value; }">
+        <option value="{% url 'commercial_dashboard'%}" >Commercial</option>
+        <option value="{% url 'operational_dashboard'%}" selected>Operationnel</option>
     </select>
 
-    <section class="incident-content">
+    <section class="dashboard-content">
         <div class="statistics-overview">
             
             <div class="statistic-cards">
                 <div class="statistic-card ">
                     <div class="card-header-stat">
-                        <h4>Total Incidents</h4>
-                        <div class="icon-wrapper icon-danger">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
+                        <h4>Tour Analysis</h4>
                     </div>
-                    <h2 class="statistic-value">{{ stats.total|default:"145" }}</h2>
-                    <small class="text-muted">Enregistrés</small>
+                    <div class="tour-analysis-wrapper">
+                        {% if tour_analysis %}
+                            <div class="chart-container tour-chart">
+                                <canvas id="tourAnalysisChart"></canvas>
+                            </div>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <div class="statistic-card ">
                     <div class="card-header-stat">
-                        <h4>Taux de résolution</h4>
-                        <div class="icon-wrapper icon-success">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
+                        <h4>Geographic Incident Analysis</h4>
                     </div>
-                    <h2 class="statistic-value">{{ stats.resolution_rate|default:"73" }}%</h2>
-                    <small class="text-muted">Enregistrés</small>
+                    <!--here goes get_geographic_incident_analysis-->
                 </div>
                 
                 <div class="statistic-card ">
                     <div class="card-header-stat">
-                        <h4>On going Incidents</h4>
-                        <div class="icon-wrapper icon-primary">
-                            <i class="bi bi-clock"></i>
-                        </div>
+                        <h4>fsfsrt</h4> 
                     </div>
-                    <h2 class="statistic-value">{{ stats.ongoing|default:"29" }}</h2>
-                    <small class="text-muted">Enregistrés</small>
+                    
                 </div>
                 
                 <div class="statistic-card ">
@@ -242,6 +237,145 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Tour Analysis Chart
+    const tourCtx = document.getElementById('tourAnalysisChart');
+    if (tourCtx) {
+        const tourData = {{ tour_analysis|safe }};
+        
+        if (tourData && tourData.length > 0) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const tourCounts = tourData.map(m => m.total_tours);
+            const evolutionRates = tourData.map(m => m.tour_evolution_rate);
+            
+            new Chart(tourCtx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: [
+                        {
+                            label: 'Total Tours',
+                            data: tourCounts,
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#ff9800',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Evolution Rate (%)',
+                            data: evolutionRates,
+                            borderColor: '#00bcd4',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#00bcd4',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Total Tours',
+                                color: '#ff9800',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#ff9800',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#e9ecef',
+                                drawBorder: false
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Evolution Rate (%)',
+                                color: '#00bcd4',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#00bcd4',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 });
 </script>
 

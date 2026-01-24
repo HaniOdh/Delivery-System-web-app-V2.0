@@ -1,0 +1,372 @@
+/* Commercial Dashboard Styles */
+
+/* Dashboard Select Styling */
+.dashboard-select {
+    appearance: none;
+    padding: 8px 14px;
+    padding-right: 40px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 40px;
+}
+
+.dashboard-select:hover {
+    background-color: #2a2a2a;
+}
+
+.dashboard-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    background-color: #2a2a2a;
+}
+
+.dashboard-select option {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    padding: 8px;
+}
+
+/* Horizontal alignment for three tables */
+.statistic-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.statistic-cards > .statistic-card:nth-child(1),
+.statistic-cards > .statistic-card:nth-child(2),
+.statistic-cards > .statistic-card:nth-child(3) {
+    flex: 1 1 calc(33.333% - 14px);
+    min-width: 300px;
+}
+
+.statistic-cards > .statistic-card:nth-child(4) {
+    flex: 1 1 100%;
+}
+
+.top-clients-table-wrapper {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.top-clients-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.top-clients-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.top-clients-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.top-clients-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.top-clients-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.top-clients-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.top-clients-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Column Widths */
+.rank-col {
+    width: 15%;
+    text-align: center;
+}
+
+.client-col {
+    width: 55%;
+}
+
+.volume-col {
+    width: 30%;
+    text-align: right;
+}
+
+/* Rank Badge */
+.rank-cell {
+    text-align: center;
+}
+
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2);
+}
+
+/* Client Cell */
+.client-cell {
+    color: #212529;
+    font-weight: 500;
+}
+
+/* Volume Badge */
+.volume-cell {
+    text-align: right;
+}
+
+.volume-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #e7f3ff;
+    color: #0066cc;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(0, 102, 204, 0.1);
+}
+
+/* No Data */
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+/* Top Clients Value Table Styles */
+.top-clients-value-wrapper {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.top-clients-value-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.top-clients-value-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.top-clients-value-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.top-clients-value-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.top-clients-value-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.top-clients-value-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.top-clients-value-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Value Column */
+.value-col {
+    width: 30%;
+    text-align: right;
+}
+
+.value-cell {
+    text-align: right;
+}
+
+.value-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #d1f5d8;
+    color: #0b7a4d;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(11, 122, 77, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .top-clients-table {
+        font-size: 12px;
+    }
+
+    .top-clients-table th,
+    .top-clients-table td {
+        padding: 8px 6px;
+    }
+
+    .rank-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .volume-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .value-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .destination-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}
+
+/* Top Destinations Table Styles */
+.top-destinations-wrapper {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.top-destinations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+.top-destinations-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.top-destinations-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.top-destinations-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.top-destinations-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.top-destinations-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.top-destinations-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Destination Column */
+.destination-col {
+    width: 55%;
+}
+
+.destination-count-col {
+    width: 30%;
+    text-align: right;
+}
+
+.destination-cell {
+    color: #212529;
+    font-weight: 500;
+}
+
+.destination-count-cell {
+    text-align: right;
+}
+
+.destination-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #fff3cd;
+    color: #974706;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(151, 71, 6, 0.1);
+}
+
+/* Commercial Year Graph Styles */
+.commercial-graph-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.monthly-chart {
+    position: relative;
+    height: 350px;
+    margin-bottom: 10px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Responsive Design for Charts */
+@media (max-width: 768px) {
+    .monthly-chart {
+        height: 250px;
+    }
+}
