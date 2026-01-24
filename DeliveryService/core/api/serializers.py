@@ -202,6 +202,26 @@ class IncidentSerializer(serializers.ModelSerializer):
         model = Incident
         fields = '__all__'
 
+    def create(self, validated_data):
+        incident = super().create(validated_data)
+
+        if incident.shipment:
+            shipment = incident.shipment
+            shipment.status = incident.status
+            shipment.save(update_fields=["status"])
+
+        return incident    
+    
+    def update(self, instance, validated_data):
+        incident = super().update(instance, validated_data)
+
+        if incident.shipment:
+            shipment = incident.shipment
+            shipment.status = incident.status
+            shipment.save(update_fields=["status"])
+
+        return incident
+
        
 
 
