@@ -40,7 +40,7 @@
                     <path d="M17.4531 14.5443C17.4531 13.741 16.802 13.0898 15.9987 13.0898C15.1954 13.0898 14.5443 13.741 14.5443 14.5443C14.5443 15.3475 15.1954 15.9987 15.9987 15.9987C16.802 15.9987 17.4531 15.3475 17.4531 14.5443ZM18.9076 14.5443C18.9076 16.1508 17.6052 17.4531 15.9987 17.4531C14.3922 17.4531 13.0898 16.1508 13.0898 14.5443C13.0898 12.9378 14.3922 11.6354 15.9987 11.6354C17.6052 11.6354 18.9076 12.9378 18.9076 14.5443Z" fill="#343A40"/>
                     <path d="M7.99935 13.8171C7.99935 12.6122 7.0226 11.6354 5.81771 11.6354C4.61282 11.6354 3.63607 12.6122 3.63607 13.8171C3.63607 15.0219 4.61282 15.9987 5.81771 15.9987C7.0226 15.9987 7.99935 15.0219 7.99935 13.8171ZM9.45378 13.8171C9.45378 15.8252 7.82585 17.4531 5.81771 17.4531C3.80956 17.4531 2.18164 15.8252 2.18164 13.8171C2.18164 11.8089 3.80956 10.181 5.81771 10.181C7.82585 10.181 9.45378 11.8089 9.45378 13.8171Z" fill="#343A40"/>
                     </svg>    Gestion Expéditions</a>
-                <a href="#" class="menu-item"> Facturation et Paiements</a>
+                <a href="{% url 'facturation_view' %}" class="menu-item {% if request.path|slice:':13' == '/facturation/' %}active{% endif %}"> Facturation et Paiements</a>
                 <a href="{% url 'incident_list' %}" class="menu-item {% if request.path|slice:':10' == '/incident/' %}active{% endif %}"> Gestion Incidents</a>
                 <a href="{% url 'reclamation_view' %}" class="menu-item {% if request.resolver_match.url_name == 'reclamation_view' %}active{% endif %}"> Gestion Réclamations</a>
                 <a href="#" class="menu-item"> Dashboards</a>
