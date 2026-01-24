@@ -131,8 +131,21 @@ class Incident(models.Model):
     tour = models.ForeignKey(Tour, on_delete=models.RESTRICT)
     status = models.CharField(max_length=100,default='new')
     
+    
     def __str__(self):
         return self.incident_type
+    
+class IncidentImage(models.Model):
+    incident = models.ForeignKey(
+        Incident,
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+    image = models.ImageField(upload_to="incidents/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for {self.incident.incident_type}"    
 
 
 class Complaint(models.Model):
