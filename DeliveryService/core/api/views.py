@@ -1,6 +1,8 @@
+from huggingface_hub import User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from .permissions import IsAdmin
 
 from core.models.models import (
     Client, Shipment, Driver, Vehicle,
@@ -98,3 +100,53 @@ incident_detail = detail_view(Incident, IncidentSerializer)
 
 get_complaints = list_create(Complaint, ComplaintSerializer)
 complaint_detail = detail_view(Complaint, ComplaintSerializer)
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])  
+def create_agent(request):
+    """Admin creates new agent via API"""
+    email = request.data['email']
+    password = request.data['password']
+    first_name = request.data.get('first_name', '')
+    last_name = request.data.get('last_name', '')
+    
+    # Create user with email as username
+    user = User.objects.create_user(
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        role='agent'  # Set as agent
+    )
+    
+    # Auto-create token for API (if using DRF tokens)
+    from rest_framework.authtoken.models import Token
+    token = Token.objects.create(user=user)
+    
+    return Response({
+        'message': f'Agent {email} created',
+        'token': token.key,
+        'email': email
+    })
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+
+# views.py
+def login_view(request):
+    print("=" * 50)
+    print("LOGIN VIEW WAS CALLED!")
+    print(f"Request method: {request.method}")
+    
+    if request.method == 'POST':
+        print("✓ POST RECEIVED!")
+        print(f"Email field: {request.POST.get('email', 'NOT FOUND')}")
+        print(f"Password field: {'FOUND' if 'password' in request.POST else 'NOT FOUND'}")
+    else:
+        print("✗ GET request (page loaded)")
+    
+    print("=" * 50)
+    
+    # ... rest of your login code ...
+    return render(request, 'login.html')

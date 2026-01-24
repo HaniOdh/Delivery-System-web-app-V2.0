@@ -38,11 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'core',
+    
 
     # Ensure templates inside core/web/templates/ are discoverable
     'core.web',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

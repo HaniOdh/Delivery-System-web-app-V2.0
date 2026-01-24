@@ -5,14 +5,46 @@ from django.db import connection
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.template import TemplateDoesNotExist
-
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login as django_login
 
 def home(request):
 	return render(request, "home.html")
 
 
+# core/web/views.py
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+
 def login_view(request):
-	return render(request, "auth/login.html")
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        print("=" * 50)
+        print("LOGIN ATTEMPT:")
+        print(f"Email entered: {email}")
+        print(f"Password entered: {'YES' if password else 'NO'}")
+        
+        # DEBUG: List all users
+        print("\nALL USERS IN DATABASE:")
+        for user in User.objects.all():
+            print(f"  - {user.username} | {user.email} | Superuser: {user.is_superuser}")
+        
+        # Try authentication
+        user = authenticate(request, username=email, password=password)
+        
+        if user:
+            print(f"✓ AUTH SUCCESS! User: {user.username}")
+            django_login(request, user)
+            return redirect('home')
+        else:
+            print("✗ AUTH FAILED")
+            return render(request, 'auth/login.html', {'error': 'Invalid email or password'})
+    
+    return render(request, 'auth/login.html')
 
 
 def signup_view(request):
