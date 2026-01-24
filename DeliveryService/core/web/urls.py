@@ -16,6 +16,7 @@ urlpatterns = [
 
     path("table/", views.list_clients, name="table"),
     path("table/clients/", views.list_clients, name="client_list"),
+    path("table/agents/", views.list_agents, name="list_agents"),
     path("table/drivers/", views.list_drivers, name="driver_list"),
     path("table/destinations/", views.list_destinations, name="destination_list"),
     path("table/vehicles/", views.list_vehicles, name="vehicle_list"),
@@ -26,4 +27,9 @@ urlpatterns = [
     path("incident/statistics/", views.statistics_view, name="incident_statistics"),
     path("expedition/", views.expedition_view, name="expedition_list"),
     path("expedition/suivi/", views.suivi_view, name="suivi_view"),
+    path("expedition/tournee/", views.tournee_view, name="tournee_view"),
+    path("reclamation/", views.reclamation_view, name="reclamation_view"),
+    path("facturation/", views.facturation_view, name="facturation_view"),
+    path("facturation/paiements/", views.paiement_view, name="paiement_view"),
+
 ]

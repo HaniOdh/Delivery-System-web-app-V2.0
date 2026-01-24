@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
@@ -7,25 +8,51 @@ from rest_framework.authtoken.models import Token
 
 
 class Client(models.Model):
+    solld = models.FloatField(default=0)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20)
     address = models.TextField()
-    balance = models.FloatField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+class Profile(models.Model):
+    """Extended user information"""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE, related_name='profile')
+
+    role = models.CharField(
+        max_length=10,
+        choices=[
+            ('admin', 'Administrator'),
+            ('agent', 'Delivery Agent'),
+        ],
+        default='agent'
+    )
+
+    phone = models.CharField(max_length=20, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    def __str__(self):
+        return f"{self.user.email} ({self.role})"
+
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+    
+
+
 
 class Destination(models.Model):
+    base_rate = models.FloatField()
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     zone = models.CharField(max_length=50)
-    base_rate = models.FloatField()
-    
 
     def __str__(self):
         return f"{self.city}, {self.country}"
@@ -41,13 +68,7 @@ class ServiceType(models.Model):
         return self.label
 
 
-class Pricing(models.Model):
-    base_price = models.FloatField()
-    service = models.ForeignKey(ServiceType, on_delete=models.RESTRICT)
-    destination = models.ForeignKey(Destination, on_delete=models.RESTRICT)
 
-    def __str__(self):
-        return f"{self.service} - {self.destination}"
 
 
 class Driver(models.Model):
@@ -88,9 +109,9 @@ class Tour(models.Model):
 
 class Invoice(models.Model):
     invoice_date = models.DateField()
-    amount_ht = models.FloatField()
-    amount_vat = models.FloatField()
-    amount_ttc = models.FloatField()
+    amount_ht = models.FloatField( default=0)
+    amount_vat = models.FloatField(default=0.19)
+    amount_ttc = models.FloatField( default=0)
     status = models.CharField(max_length=50)
     client = models.ForeignKey(Client, on_delete=models.RESTRICT)
 
@@ -104,7 +125,7 @@ class Shipment(models.Model):
     weight = models.FloatField()
     volume = models.FloatField()
     description = models.TextField()
-    amount_ht = models.FloatField()
+    amount_ht = models.FloatField( default=0)
     status = models.CharField(max_length=50)
 
     client = models.ForeignKey(Client, on_delete=models.RESTRICT)
@@ -121,7 +142,7 @@ class Payment(models.Model):
     payment_date = models.DateField()
     amount = models.FloatField()
     payment_method = models.CharField(max_length=50)
-    invoice = models.ForeignKey(Invoice, on_delete=models.RESTRICT)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
     client = models.ForeignKey(Client, on_delete=models.RESTRICT)
 
     def __str__(self):
@@ -134,7 +155,8 @@ class Incident(models.Model):
     incident_date = models.DateField()
     shipment = models.ForeignKey(Shipment, on_delete=models.RESTRICT)
     tour = models.ForeignKey(Tour, on_delete=models.RESTRICT)
-
+    status = models.CharField(max_length=100,default='new')
+    
     def __str__(self):
         return self.incident_type
 

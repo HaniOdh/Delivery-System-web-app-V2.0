@@ -1,27 +1,21 @@
 {% extends "home.html" %}
+
 {% load static %}
 
-{% block title %}Tarifications - Delivery System{% endblock %}
+{% block title %}Facture - DeliveryService{% endblock %}
 
 {% block content %}
-<style>
-
+<Style>
     .main-content { background-color: #fff !important; }
-</style>
-
+</Style>
 <div class="tables-top">
     <div class="table-header">
-            <h2><b>Tables</b></h2>
-            <p class="text-muted">Manage all different systems tables,including Clients,Drivers,Destinations, and more.</p>
+            <h2><b>Facturation et Paiements</b></h2>
+            <p class="text-muted">Ajouter, éditer et gérer les factures et paiements tout en un seul endroit.</p>
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
-            <option value="{% url 'client_list' %}" >Clients</option>
-            <option value="{% url 'list_agents' %}" >Agents</option>
-            <option value="{% url 'driver_list' %}" >Drivers</option>
-            <option value="{% url 'destination_list' %}">Destinations</option>
-            <option value="{% url 'vehicle_list' %}">Vehicles</option>
-            <option value="{% url 'tarification_list' %}" selected>Tarification</option>
-            <option value="{% url 'service_type_list' %}">Services-types</option>
+            <option value="{% url 'facturation_view' %}" >Facturation</option>
+            <option value="{% url 'paiement_view' %}" selected>Paiements</option>
     </select>
 </div>
 <section class="table-section">
@@ -31,8 +25,11 @@
                 <input type="text" name="search" id="search" placeholder="Search..." value="{{ request.GET.search }}">
                 <select id="filter" name="filter">
                     <option value="" disabled {% if not request.GET.filter %}selected{% endif %}>Sort By</option>
-                    <option value="desc" {% if request.GET.filter == "desc" %}selected{% endif %}>Z-A</option>
-                    <option value="asc" {% if request.GET.filter == "asc" %}selected{% endif %}>A-Z</option>
+                    <option value="paymentdate" {% if request.GET.filter == "paymentdate" %}selected{% endif %}>Payment Date</option>
+                    <option value="invoiceid" {% if request.GET.filter == "invoiceid" %}selected{% endif %}>Invoice ID</option>
+                    <option value="client" {% if request.GET.filter == "client" %}selected{% endif %}>Client</option>
+                    <option value="method" {% if request.GET.filter == "method" %}selected{% endif %}>Payment Method</option>
+                    
                 </select>
             </div>
             <div class="right">
@@ -45,7 +42,7 @@
                 </button>
 
                 <button type="button" class="btn primary">
-                    + Add Tarification
+                    + Add Paiement
                 </button>
             </div>
         </form>
@@ -57,29 +54,69 @@
             <thead>
                 
                 <tr>
-                    <th>Tarification ID</th>
-                    <th>Destination</th>
-                    <th>Service Type</th>
-                    <th>Base price</th> 
+                    <th>Paiement ID</th>
+                    <th>Facture ID</th>
+                    <th>Client</th>
+                    <th>Payment Date</th>
+                    <th>Methode</th>
+                    <th>Montant</th>
+                    
                 </tr>
             </thead>
             <tbody>
-                {% for tarification in tarifications %}
+
+                {% for paiement in page_obj %}
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="{{ tarification.id }}"></td>
-                    <td>{{ tarification.destination.country }} - {{ tarification.destination.city }} - {{ tarification.destination.zone }}</td>
-                    <td>{{ tarification.service_type.name }}</td>
-                    <td>{{ tarification.base_price }}</td>
+                    <td class="id-col"><input type="checkbox" value="{{ paiement.id }}">
+                        PAY-{{ paiement.id }}
+                    </td>
+                    <td>INV-{{ paiement.invoice }}</td>
+                    <td>{{ paiement.client }}</td>
+                    <td>{{ paiement.payment_date }}</td>
+                    <td>{{ paiement.payment_method }}</td>
+                    <td>{{ paiement.amount }} DA</td>
+                    
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6">No tarifications found.</td>
+                    <td class="id-col"><input type="checkbox" value="PAY-001">PAY-001</td>
+                    <td>INV-001</td>
+                    <td>Client Test 1</td>
+                    <td>2026-01-01</td>
+                    <td>Credit Card</td>
+                    <td>15000 DA</td>
+
+                </tr>
+
+                <tr>
+                    <td class="id-col"><input type="checkbox" value="PAY-002">PAY-002</td>
+                    <td>INV-002</td>
+                    <td>Client Test 2</td>
+                    <td>2026-01-05</td>
+                    <td>Bank Transfer</td>
+                    <td>8000 DA</td>
+                </tr>
+                <tr>
+                    <td class="id-col"><input type="checkbox" value="PAY-003">PAY-003</td>
+                    <td>INV-003</td>
+                    <td>Client Test 2</td>
+                    <td>2026-01-07</td>
+                    <td>Cash</td>
+                    <td>4000 DA</td>
+                </tr>
+                <tr>
+                    <td class="id-col"><input type="checkbox" value="PAY-004">PAY-004</td>
+                    <td>INV-004</td>
+                    <td>Client Test 4</td>
+                    <td>2026-01-10</td>
+                    <td>Credit Card</td>
+                    <td>12000 DA</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="6">
+                    <td colspan="8">
                         <div class="pagination-footer">
                             <div class="pagination">
                                 {% if page_obj.has_previous %}

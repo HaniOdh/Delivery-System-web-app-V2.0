@@ -150,5 +150,99 @@
         </div>
     </section>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('incidentChart');
+    
+    // Prepare data from Django context
+    const causes = [
+        {% for cause in causes %}
+        {
+            name: '{{ cause.get_cause_display|default:cause.cause }}',
+            count: {{ cause.count }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    // Fallback demo data if no causes exist
+    const chartData = causes.length > 0 ? {
+        labels: causes.map(c => c.name),
+        data: causes.map(c => c.count)
+    } : {
+        labels: ['Retard', 'Endommagement', 'Perte', 'Accident', 'Destinataire', 'Adresse'],
+        data: [4, 2, 2, 3, 2, 2]
+    };
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Nombre d\'incidents',
+                data: chartData.data,
+                backgroundColor: chartData.data.map((value, index) => {
+                    // Highlight bars with max values
+                    const maxValue = Math.max(...chartData.data);
+                    return value === maxValue ? '#0d6efd' : '#a8c5ff';
+                }),
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' incident(s)';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: '#e9ecef',
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 
 {% endblock %}

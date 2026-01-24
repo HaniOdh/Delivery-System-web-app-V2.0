@@ -3,18 +3,20 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .permissions import IsAdmin
+from core.services.client_service import add_price_to_sold
+from core.services.payment_service import pay
 
 from core.models.models import (
     Client, Shipment, Driver, Vehicle,
-    Destination, ServiceType, Pricing,
+    Destination, ServiceType, 
     Tour, Invoice, Payment, Incident, Complaint
 )
 
 from .serializers import (
     ClientSerializer, DestinationSerializer, ServiceTypeSerializer,
-    PricingSerializer, DriverSerializer, VehicleSerializer,
+     DriverSerializer, VehicleSerializer,
     TourSerializer, InvoiceSerializer, ShipmentSerializer,
-    PaymentSerializer, IncidentSerializer, ComplaintSerializer
+    IncidentSerializer, ComplaintSerializer,PaymentSerializer
 )
 
 
@@ -30,6 +32,7 @@ def list_create(model, serializer_class):
 
         if request.method == 'POST':
             serializer = serializer_class(data=request.data)
+
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -63,6 +66,153 @@ def detail_view(model, serializer_class):
     return view
 
 
+@api_view(['GET'])
+def get_invoices_by_param(request):
+    client = request.GET.get("client")
+    invoice_date = request.GET.get("invoice_date")
+    status = request.GET.get("status")
+
+    queryset = Shipment.objects.all()
+
+    if client:
+        queryset = queryset.filter(
+            client__first_name__iexact=client
+        )
+
+    if invoice_date:
+        queryset = queryset.filter(
+            invoice_date=invoice_date
+        )
+
+
+    if status:
+        queryset = queryset.filter(
+            status__iexact=status
+        )
+
+    serializer = ShipmentSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_payments_by_param(request):
+    client = request.GET.get("client")
+    payment_date = request.GET.get("payment_date")
+    status = request.GET.get("status")
+    payment_method = request.GET.get("payment_method")
+    invoice = request.GET.get("invoice")
+   
+
+    queryset = Shipment.objects.all()
+
+    if client:
+        queryset = queryset.filter(
+            client__first_name__iexact=client
+        )
+
+    if payment_date:
+        queryset = queryset.filter(
+            payment_date=payment_date
+        )
+
+    if invoice:
+        queryset = queryset.filter(
+            invoice__iexact=invoice
+        )
+
+    if status:
+        queryset = queryset.filter(
+            status__iexact=status
+        )
+        
+    if payment_method:
+        queryset = queryset.filter(
+            payment_method__iexact=payment_method
+        )    
+
+    serializer = ShipmentSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def get_expidition_by_param(request):
+    client = request.GET.get("client")
+    shipment_date = request.GET.get("shipment_date")
+    destination = request.GET.get("destination")
+    service = request.GET.get("service")
+    status = request.GET.get("status")
+
+    queryset = Shipment.objects.all()
+
+    if client:
+        queryset = queryset.filter(
+            client__first_name__iexact=client
+        )
+
+    if shipment_date:
+        queryset = queryset.filter(
+            shipment_date=shipment_date
+        )
+
+    if destination:
+        queryset = queryset.filter(
+            destination__country__iexact=destination
+        )
+
+    if service:
+        queryset = queryset.filter(
+            service__label__iexact=service
+        )
+
+    if status:
+        queryset = queryset.filter(
+            status__iexact=status
+        )
+
+    serializer = ShipmentSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def handle_invoice(request, pk):
+        try:
+            obj = Invoice.objects.get(pk=pk)
+        except Invoice.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            return Response(InvoiceSerializer(obj).data)
+
+        if request.method == 'PUT':
+            serializer = InvoiceSerializer(obj, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'DELETE':
+            
+            client = obj.client
+
+        
+        
+            add_price_to_sold(client, -obj.amount_ttc)
+
+        
+            payments = obj.payment_set.all()  
+
+            for payment in payments:
+             add_price_to_sold(client, payment.amount)
+             
+
+            obj.delete()  
+
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
 # ---------- BOUND VIEWS (THIS IS THE IMPORTANT PART) ----------
 
 get_clients = list_create(Client, ClientSerializer)
@@ -74,8 +224,6 @@ destination_detail = detail_view(Destination, DestinationSerializer)
 get_services = list_create(ServiceType, ServiceTypeSerializer)
 service_detail = detail_view(ServiceType, ServiceTypeSerializer)
 
-get_pricings = list_create(Pricing, PricingSerializer)
-pricing_detail = detail_view(Pricing, PricingSerializer)
 
 get_drivers = list_create(Driver, DriverSerializer)
 driver_detail = detail_view(Driver, DriverSerializer)
@@ -87,7 +235,7 @@ get_tours = list_create(Tour, TourSerializer)
 tour_detail = detail_view(Tour, TourSerializer)
 
 get_invoices = list_create(Invoice, InvoiceSerializer)
-invoice_detail = detail_view(Invoice, InvoiceSerializer)
+
 
 get_shipments = list_create(Shipment, ShipmentSerializer)
 shipment_detail = detail_view(Shipment, ShipmentSerializer)

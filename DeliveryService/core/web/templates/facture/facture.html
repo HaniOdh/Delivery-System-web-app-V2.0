@@ -1,52 +1,21 @@
 {% extends "home.html" %}
+
 {% load static %}
 
-{% block title %}Gestion Expéditions - Delivery System{% endblock %}
+{% block title %}Facture - DeliveryService{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/expedition.css' %}">
-<style>
-
+<Style>
     .main-content { background-color: #fff !important; }
-
-    .status{
-        text-align: center;
-    }
-    .status-disponible {
-        background-color: #d1fae5;
-        color: #065f46;
-        
-    }
-    .status-offline {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        
-
-    }
-    .status-badge{
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 999px; /* pill / badge */
-        font-size: 0.85rem;
-        font-weight: 500;
-        line-height: 1.2;
-    }
-    .status-en_mission {
-        background-color: #e0f2fe;
-        color: #0369a1;
-        
-    }
-
-</style>
+</Style>
 <div class="tables-top">
     <div class="table-header">
-            <h2><b>Gestion Expéditions</b></h2>
-            <p class="text-muted">Ajouter, éditer et gérer les expéditions tout en un seul endroit.</p>
+            <h2><b>Facturation et Paiements</b></h2>
+            <p class="text-muted">Ajouter, éditer et gérer les factures et paiements tout en un seul endroit.</p>
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
-            <option value="{% url 'expedition_list' %}" selected>Journal</option>
-            <option value="{% url 'suivi_view' %}">Suivi</option>
-            <option value="{% url 'tournee_view' %}">Tournee</option>
+            <option value="{% url 'facturation_view' %}" selected>Facturation</option>
+            <option value="{% url 'paiement_view' %}">Paiements</option>
     </select>
 </div>
 <section class="table-section">
@@ -56,9 +25,9 @@
                 <input type="text" name="search" id="search" placeholder="Search..." value="{{ request.GET.search }}">
                 <select id="filter" name="filter">
                     <option value="" disabled {% if not request.GET.filter %}selected{% endif %}>Sort By</option>
-                    <option value="desc" {% if request.GET.filter == "desc" %}selected{% endif %}>Z-A</option>
-                    <option value="asc" {% if request.GET.filter == "asc" %}selected{% endif %}>A-Z</option>
-                    <option value="client" {% if request.GET.filter == "client" %}selected{% endif %}>A-Z</option>
+                    <option value="client" {% if request.GET.filter == "client" %}selected{% endif %}>Client</option>
+                    <option value="status" {% if request.GET.filter == "status" %}selected{% endif %}>Status</option>
+                    <option value="invoice-date" {% if request.GET.filter == "invoice-date" %}selected{% endif %}>Invoice Date</option>
                     
                 </select>
             </div>
@@ -72,7 +41,7 @@
                 </button>
 
                 <button type="button" class="btn primary">
-                    + Add Expedition
+                    + Add Facture
                 </button>
             </div>
         </form>
@@ -84,88 +53,100 @@
             <thead>
                 
                 <tr>
-                    <th>Expedition ID</th>
+                    <th>Facture ID</th>
                     <th>Client</th>
-                    <th>Destination</th>
-                    <th>Service</th>
-                    <th>Poid</th>
-                    <th>Volume</th>
-                    <th>Montant</th>
-                    <th style="width: 90px;">Status</th>
+                    <th>Date</th>
+                    <th>Montant HT</th>
+                    <th>TVA(19%)</th>
+                    <th>Total TTC</th>
+                    <th>Rest</th>
+                    <th style="width: 120px;">Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for expedition in page_obj %}
+                
+                {% for invoice in page_obj %}
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="{{ expedition.id }}">EXP-{{ expedition.id }}</td>
-                    <td>{{ expedition.client }}</td>
-                    <td>{{ expedition.destination }}</td>
-                    <td>{{ expedition.service }}</td>
-                    <td>{{ expedition.poid }} kg</td>
-                    <td>{{ expedition.volume }} m³</td>
-                    <td>{{ expedition.montant }}</td>
+                    <td class="id-col">
+                        <label>
+                            <input type="checkbox" value="{{ invoice.id }}">
+                            {{ invoice.id }}
+                        </label>
+                    </td>
+                    <td>{{ invoice.client }}</td>
+                    <td>{{ invoice.invoice_date }}</td>
+                    <td>{{ invoice.amount_ht }} DA</td>
+                    <td>{{ invoice.amount_vat }} DA</td>
+                    <td>{{ invoice.amount_ttc }} DA</td>
+                    <td>{{ invoice.rest }} DA</td>
                     <td class="status">
-                        {% if expedition.status == "disponible" %}
-                            <span class="status-badge status-disponible">{{ expedition.status }}</span>
-                        {% elif expedition.status == "offline" %}
-                            <span class="status-badge status-offline">{{ expedition.status }}</span>
-                        {% elif expedition.status == "en_mission" %}
-                            <span class="status-badge status-en_mission">{{ expedition.status }}</span>
+                        {% if invoice.status == "payee" %}
+                            <span class="status-badge status-disponible">{{ invoice.status }}</span>
+                        {% elif invoice.status == "non-payee" %}
+                            <span class="status-badge status-offline">{{ invoice.status }}</span>
+                        {% elif invoice.status == "part-payee" %}
+                            <span class="status-badge status-en_mission">{{ invoice.status }}</span>
                         {% else %}
-                            <span class="status-badge">{{ expedition.status }}</span>
+                            <span class="status-badge">{{ invoice.status }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="EXP-001">EXP-001</td>
+                    <td class="id-col"><input type="checkbox" value="INV-001">
+                        INV-001
+                    </td>
                     <td>Client Test 1</td>
-                    <td>Alger</td>
-                    <td>Express</td>
-                    <td>12 kg</td>
-                    <td>0.8 m³</td>
-                    <td>2500 DA</td>
+                    <td>2026-01-01</td>
+                    <td>10000 DA</td>
+                    <td>1900 DA</td>
+                    <td>11900 DA</td>
+                    <td>0 DA</td>
                     <td class="status">
-                        <span class="status-badge status-disponible">disponible</span>
+                        <span class="status-badge status-disponible">payee</span>
                     </td>
                 </tr>
 
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="EXP-002">EXP-002</td>
+                    <td class="id-col"><input type="checkbox" value="INV-002">
+                        INV-002
+                    </td>
                     <td>Client Test 2</td>
-                    <td>Oran</td>
-                    <td>Standard</td>
-                    <td>5 kg</td>
-                    <td>0.3 m³</td>
-                    <td>1200 DA</td>
+                    <td>2026-01-05</td>
+                    <td>8000 DA</td>
+                    <td>1520 DA</td>
+                    <td>9520 DA</td>
+                    <td>2000 DA</td>
                     <td class="status">
-                        <span class="status-badge status-en_mission">en_mission</span>
+                        <span class="status-badge status-en_mission">part-payee</span>
                     </td>
                 </tr>
-
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="EXP-003">EXP-003</td>
+                    <td class="id-col"><input type="checkbox" value="INV-003">
+                        INV-003     
+                    </td>
                     <td>Client Test 3</td>
-                    <td>Constantine</td>
-                    <td>Economy</td>
-                    <td>20 kg</td>
-                    <td>1.5 m³</td>
-                    <td>4000 DA</td>
+                    <td>2026-01-10</td>
+                    <td>5000 DA</td>
+                    <td>950 DA</td>
+                    <td>5950 DA</td>
+                    <td>5950 DA</td>
                     <td class="status">
-                        <span class="status-badge status-offline">offline</span>
+                        <span class="status-badge status-offline">non-payee</span>
                     </td>
                 </tr>
-
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="EXP-004">EXP-004</td>
+                    <td class="id-col"><input type="checkbox" value="INV-004">
+                        INV-004
+                    </td>
                     <td>Client Test 4</td>
-                    <td>Blida</td>
-                    <td>Express</td>
-                    <td>8 kg</td>
-                    <td>0.6 m³</td>
-                    <td>1800 DA</td>
+                    <td>2026-01-15</td>
+                    <td>12000 DA</td>
+                    <td>2280 DA</td>
+                    <td>14280 DA</td>
+                    <td>0 DA</td>
                     <td class="status">
-                        <span class="status-badge status-disponible">disponible</span>
+                        <span class="status-badge status-disponible">payee</span>
                     </td>
                 </tr>
                 {% endfor %}

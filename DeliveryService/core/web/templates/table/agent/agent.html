@@ -1,7 +1,7 @@
 {% extends "home.html" %}
 {% load static %}
 
-{% block title %}Tarifications - Delivery System{% endblock %}
+{% block title %}Agents Table - Delivery System{% endblock %}
 
 {% block content %}
 <style>
@@ -16,11 +16,11 @@
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
             <option value="{% url 'client_list' %}" >Clients</option>
-            <option value="{% url 'list_agents' %}" >Agents</option>
-            <option value="{% url 'driver_list' %}" >Drivers</option>
+            <option value="{% url 'list_agents' %}" selected>Agents</option>
+            <option value="{% url 'driver_list' %}">Drivers</option>
             <option value="{% url 'destination_list' %}">Destinations</option>
             <option value="{% url 'vehicle_list' %}">Vehicles</option>
-            <option value="{% url 'tarification_list' %}" selected>Tarification</option>
+            <option value="{% url 'tarification_list' %}">Tarification</option>
             <option value="{% url 'service_type_list' %}">Services-types</option>
     </select>
 </div>
@@ -44,8 +44,8 @@
                     <i class="fa-solid fa-print"></i> Print
                 </button>
 
-                <button type="button" class="btn primary">
-                    + Add Tarification
+                <button type="button" class="btn primary ">
+                    + Add Agent
                 </button>
             </div>
         </form>
@@ -57,23 +57,27 @@
             <thead>
                 
                 <tr>
-                    <th>Tarification ID</th>
-                    <th>Destination</th>
-                    <th>Service Type</th>
-                    <th>Base price</th> 
+                    <th>Agent ID</th>
+                    <th>Username</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Phone Number</th>
+                    <th>Email</th>
                 </tr>
             </thead>
             <tbody>
-                {% for tarification in tarifications %}
+                {% for agent in page_obj %}
                 <tr>
-                    <td class="id-col"><input type="checkbox" value="{{ tarification.id }}"></td>
-                    <td>{{ tarification.destination.country }} - {{ tarification.destination.city }} - {{ tarification.destination.zone }}</td>
-                    <td>{{ tarification.service_type.name }}</td>
-                    <td>{{ tarification.base_price }}</td>
+                    <td class="id-col"><input type="checkbox" value="{{ agent.id }}">AG-{{ agent.id }}</td>
+                    <td>{{ agent.username }}</td>
+                    <td>{{ agent.first_name }}</td>
+                    <td>{{ agent.last_name }}</td>
+                    <td>{{ agent.phone_number }}</td>
+                    <td>{{ agent.email }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6">No tarifications found.</td>
+                    <td colspan="6">No agents found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -121,3 +125,4 @@
     </div>
 </section>
 {% endblock %}
+
