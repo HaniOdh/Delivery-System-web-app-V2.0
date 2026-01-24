@@ -1,22 +1,29 @@
-from huggingface_hub import User
+from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .permissions import IsAdmin
 from core.services.client_service import add_price_to_sold
 from core.services.payment_service import pay
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from rest_framework import status, viewsets
+from rest_framework.decorators import api_view, parser_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 from core.models.models import (
     Client, Shipment, Driver, Vehicle,
     Destination, ServiceType, 
-    Tour, Invoice, Payment, Incident, Complaint,Profile
+    Tour, Invoice, Payment, Incident, Complaint,Profile,IncidentImage
 )
 
 from .serializers import (
     ClientSerializer, DestinationSerializer, ServiceTypeSerializer,
      DriverSerializer, VehicleSerializer,
     TourSerializer, InvoiceSerializer, ShipmentSerializer,
-    IncidentSerializer, ComplaintSerializer,PaymentSerializer
+    IncidentSerializer, ComplaintSerializer,PaymentSerializer,IncidentImageSerializer
 )
 
 
@@ -209,6 +216,22 @@ def handle_invoice(request, pk):
 
         
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
+def upload_incident_image(request, incident_id):
+    try:
+        incident = Incident.objects.get(id=incident_id)
+    except Incident.DoesNotExist:
+        return Response({"error": "Incident not found"}, status=404)
+
+    serializer = IncidentImageSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(incident=incident)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

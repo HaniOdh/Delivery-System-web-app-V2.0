@@ -10,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 from core.models.models  import (
     Client, Shipment, Driver, Vehicle,
     Destination, ServiceType, 
-    Tour, Invoice, Payment, Incident, Complaint
+    Tour, Invoice, Payment, Incident, Complaint,IncidentImage
 )
 
 
@@ -189,11 +189,40 @@ class PaymentSerializer(serializers.ModelSerializer):
         
         return super().update(instance, validated_data)    
 
+class IncidentImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncidentImage
+        fields = ["id", "image", "uploaded_at"]
+        read_only_fields = ["id", "uploaded_at"]
 
 class IncidentSerializer(serializers.ModelSerializer):
+    images = IncidentImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Incident
         fields = '__all__'
+
+    def create(self, validated_data):
+        incident = super().create(validated_data)
+
+        if incident.shipment:
+            shipment = incident.shipment
+            shipment.status = incident.status
+            shipment.save(update_fields=["status"])
+
+        return incident    
+    
+    def update(self, instance, validated_data):
+        incident = super().update(instance, validated_data)
+
+        if incident.shipment:
+            shipment = incident.shipment
+            shipment.status = incident.status
+            shipment.save(update_fields=["status"])
+
+        return incident
+
+       
 
 
 class ComplaintSerializer(serializers.ModelSerializer):
