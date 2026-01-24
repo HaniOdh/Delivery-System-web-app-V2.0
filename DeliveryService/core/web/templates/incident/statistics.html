@@ -17,7 +17,7 @@
     <select name="incident" class="incident-select" onchange="if (this.value) { window.location.href =this.value; }">
         <option value="{% url 'incident_list'%}" >Historique</option>
         <option value="{% url 'incident_statistics' %}" selected>Statistique</option>
-        <option value="analytics">Analytics</option>
+        
     </select>
 
     <section class="incident-content">

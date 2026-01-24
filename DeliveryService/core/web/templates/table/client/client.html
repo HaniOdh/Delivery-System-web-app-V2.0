@@ -16,7 +16,7 @@
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
             <option value="{% url 'client_list' %}" selected>Clients</option>
-              {% if  user.profile.role == 'admin' %}
+            {% if  user.profile.role == 'admin' %}
             <option value="{% url 'list_agents' %}" >Agents</option>
             {% endif %}
             <option value="{% url 'driver_list' %}">Drivers</option>
@@ -38,7 +38,7 @@
                 </select>
             </div>
             <div class="right">
-                <button type="submit" class="btn danger">
+                <button type="button" class="btn danger">
                     <i class="fa-solid fa-trash"></i>
                 </button>
 
@@ -59,7 +59,12 @@
             <thead>
                 
                 <tr>
-                    <th>Client ID</th>
+                    <th>
+                        <label>
+                            <input type="checkbox" id="selectAll">
+                            Client ID
+                        </label>
+                    </th>
                     <th>First Name</th>
                     <th>Last Name</th>
                     <th>Phone Number</th>

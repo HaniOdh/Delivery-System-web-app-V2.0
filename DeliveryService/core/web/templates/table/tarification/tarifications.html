@@ -16,7 +16,7 @@
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
             <option value="{% url 'client_list' %}" >Clients</option>
-              {% if  user.profile.role == 'admin' %}
+            {% if  user.profile.role == 'admin' %}
             <option value="{% url 'list_agents' %}" >Agents</option>
             {% endif %}
             <option value="{% url 'driver_list' %}" >Drivers</option>
@@ -46,7 +46,7 @@
                     <i class="fa-solid fa-print"></i> Print
                 </button>
 
-                <button type="button" class="btn primary">
+                <button type="button" class="btn primary" >
                     + Add Tarification
                 </button>
             </div>

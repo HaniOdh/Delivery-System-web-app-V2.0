@@ -1,0 +1,73 @@
+/* Scoped styles for Add Facture modal form */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(1px);
+}
+
+.modal-content h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-content label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;   
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f9fafb;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+    background: #fff;
+    }
+
+/* Group date + amount in a tidy grid if desired */
+.modal-content .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.modal-content .form-actions-row {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-content .btn.primary {
+    padding-inline: 18px;
+}
+
+.close-btn {
+    float: right;
+    font-size: 22px;
+    cursor: pointer;
+    color: #6b7280;
+}
+.close-btn:hover { color: #111827; }
