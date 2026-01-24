@@ -37,11 +37,6 @@ document.addEventListener("DOMContentLoaded", function () {
             address: form.adress.value.trim()  // matches your HTML field name
         };
 
-        // Include balance if provided
-        if (form.solld.value.trim() !== "") {
-            data.solld = form.solld.value.trim();
-        }
-
         // Send POST request to API
         fetch("http://127.0.0.1:8000/api/clients/", {  // use relative URL
             method: "POST",
