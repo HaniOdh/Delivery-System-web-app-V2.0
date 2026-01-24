@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    get_clients, client_detail,
+    agent_detail, create_agent, get_clients, client_detail,
     get_destinations, destination_detail,
     get_services, service_detail,
     get_drivers, driver_detail,
@@ -51,5 +51,8 @@ urlpatterns = [
 
     path('complaints/', get_complaints),
     path('complaints/<int:pk>/', complaint_detail),
+
+    path('agents/', create_agent, name='create_agent'), 
+    path('agents/<int:pk>/', agent_detail, name='agent_detail'),  #
 ]
 

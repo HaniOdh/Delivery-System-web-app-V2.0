@@ -43,7 +43,9 @@
                 <a href="{% url 'facturation_view' %}" class="menu-item {% if request.path|slice:':13' == '/facturation/' %}active{% endif %}"> Facturation et Paiements</a>
                 <a href="{% url 'incident_list' %}" class="menu-item {% if request.path|slice:':10' == '/incident/' %}active{% endif %}"> Gestion Incidents</a>
                 <a href="{% url 'reclamation_view' %}" class="menu-item {% if request.resolver_match.url_name == 'reclamation_view' %}active{% endif %}"> Gestion Réclamations</a>
+                {% if  user.profile.role == 'admin' %}
                 <a href="#" class="menu-item"> Dashboards</a>
+                {% endif %}
                 
             </nav>
             <div class="logout">

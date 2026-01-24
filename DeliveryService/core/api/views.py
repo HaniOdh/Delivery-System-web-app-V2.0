@@ -9,7 +9,7 @@ from core.services.payment_service import pay
 from core.models.models import (
     Client, Shipment, Driver, Vehicle,
     Destination, ServiceType, 
-    Tour, Invoice, Payment, Incident, Complaint
+    Tour, Invoice, Payment, Incident, Complaint,Profile
 )
 
 from .serializers import (
@@ -251,50 +251,158 @@ complaint_detail = detail_view(Complaint, ComplaintSerializer)
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+# views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import get_user_model
+
+from .permissions import IsAdmin
+
+User = get_user_model()
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsAdmin])  
 def create_agent(request):
-    """Admin creates new agent via API"""
-    email = request.data['email']
-    password = request.data['password']
+    """
+    POST /api/agents/
+    Create a new agent user
+    Admin only
+    """
+    # Get data
+    email = request.data.get('email')
+    password = request.data.get('password')
     first_name = request.data.get('first_name', '')
     last_name = request.data.get('last_name', '')
+    phone = request.data.get('phone', '')
+    
+    # Validate required fields
+    if not email:
+        return Response(
+            {'error': 'Email is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if not password:
+        return Response(
+            {'error': 'Password is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if email already exists
+    if User.objects.filter(email=email).exists():
+        return Response(
+            {'error': 'A user with this email already exists'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
     # Create user with email as username
-    user = User.objects.create_user(
-        email=email,
-        password=password,
-        first_name=first_name,
-        last_name=last_name,
-        role='agent'  # Set as agent
-    )
+    try:
+        user = User.objects.create_user(
+            username=email,  # Use email as username
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=False,      # Agents shouldn't be staff
+            is_superuser=False   # Agents shouldn't be superuser
+        )
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to create user: {str(e)}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
-    # Auto-create token for API (if using DRF tokens)
-    from rest_framework.authtoken.models import Token
-    token = Token.objects.create(user=user)
+    # Create Profile with agent role
+    try:
+        Profile.objects.create(
+            user=user,
+            role='agent',
+            phone=phone
+        )
+    except Exception as e:
+        # Rollback user creation if profile fails
+        user.delete()
+        return Response(
+            {'error': f'Failed to create profile: {str(e)}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Auto-create token for API (optional)
+    try:
+        from rest_framework.authtoken.models import Token
+        token = Token.objects.create(user=user)
+        token_key = token.key
+    except:
+        token_key = None
     
     return Response({
-        'message': f'Agent {email} created',
-        'token': token.key,
-        'email': email
-    })
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
+        'message': f'Agent {email} created successfully',
+        'agent_id': user.id,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'role': 'agent',
+        'token': token_key  # Only include if admin should have agent's token
+    }, status=status.HTTP_201_CREATED)
 
-# views.py
-def login_view(request):
-    print("=" * 50)
-    print("LOGIN VIEW WAS CALLED!")
-    print(f"Request method: {request.method}")
+
+
+@api_view(['GET', 'DELETE'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def agent_detail(request, pk):
+    """
+    GET /api/agents/<id>/ - Get agent details
+    DELETE /api/agents/<id>/ - Delete an agent
+    Admin only
+    """
+    try:
+        # Get the user
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
     
-    if request.method == 'POST':
-        print("✓ POST RECEIVED!")
-        print(f"Email field: {request.POST.get('email', 'NOT FOUND')}")
-        print(f"Password field: {'FOUND' if 'password' in request.POST else 'NOT FOUND'}")
-    else:
-        print("✗ GET request (page loaded)")
+    # Check if user has a profile
+    try:
+        profile = user.profile
+    except Profile.DoesNotExist:
+        return Response(
+            {'error': 'User does not have a profile'},
+            status=status.HTTP_404_NOT_FOUND
+        )
     
-    print("=" * 50)
+    # Check if the user is actually an agent
+    if profile.role != 'agent':
+        return Response(
+            {'error': 'User is not an agent'},
+            status=status.HTTP_404_NOT_FOUND
+        )
     
-    # ... rest of your login code ...
-    return render(request, 'login.html')
+    if request.method == 'GET':
+        # Create response data
+        agent_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'is_active': user.is_active,
+            'date_joined': user.date_joined,
+            'role': profile.role,
+            'phone': profile.phone,
+            'profile_created': profile.created_at
+        }
+        return Response(agent_data)
+    
+    elif request.method == 'DELETE':
+        # Delete the agent
+        email = user.email
+        user.delete()
+        return Response(
+            {'message': f'Agent {email} deleted successfully'},
+            status=status.HTTP_204_NO_CONTENT
+        )

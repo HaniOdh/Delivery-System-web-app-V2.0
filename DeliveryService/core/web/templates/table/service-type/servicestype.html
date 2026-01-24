@@ -15,7 +15,9 @@
     </div>
     <select name="table" class="table-select" onchange="if (this.value) { window.location.href = this.value; }">
             <option value="{% url 'client_list' %}" >Clients</option>
+            {% if  user.profile.role == 'admin' %}
             <option value="{% url 'list_agents' %}" >Agents</option>
+            {% endif %}
             <option value="{% url 'driver_list' %}">Drivers</option>
             <option value="{% url 'destination_list' %}">Destinations</option>
             <option value="{% url 'vehicle_list' %}">Vehicles</option>
