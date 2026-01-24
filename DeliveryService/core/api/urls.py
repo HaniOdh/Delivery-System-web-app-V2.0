@@ -11,7 +11,7 @@ from .views import (
     get_payments, payment_detail,
     get_incidents, incident_detail,
     get_complaints, complaint_detail,
-    get_expidition_by_param,
+    get_expidition_by_param,get_payments_by_param,get_invoices_by_param,
 )
 
 urlpatterns = [
@@ -36,6 +36,7 @@ urlpatterns = [
 
     path('invoices/', get_invoices),
     path('invoices/<int:pk>/', handle_invoice),
+    path('invoices/filter/', get_invoices_by_param),
 
     path('shipments/', get_shipments),
     path('shipments/<int:pk>/', shipment_detail),
@@ -43,6 +44,7 @@ urlpatterns = [
 
     path('payments/', get_payments),
     path('payments/<int:pk>/', payment_detail),
+    path('payments/filter/', get_payments_by_param),
 
     path('incidents/', get_incidents),
     path('incidents/<int:pk>/', incident_detail),

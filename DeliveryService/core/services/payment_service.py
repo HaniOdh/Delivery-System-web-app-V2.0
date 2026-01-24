@@ -8,6 +8,6 @@ def pay(payment: Payment , amount):
 
     
 
-    payment.client.sold -= amount
+    payment.client.solld -= amount
     
-    payment.client.save(update_fields=["sold"])
+    payment.client.save(update_fields=["solld"])

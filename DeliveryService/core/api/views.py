@@ -65,6 +65,73 @@ def detail_view(model, serializer_class):
 
 
 @api_view(['GET'])
+def get_invoices_by_param(request):
+    client = request.GET.get("client")
+    invoice_date = request.GET.get("invoice_date")
+    status = request.GET.get("status")
+
+    queryset = Shipment.objects.all()
+
+    if client:
+        queryset = queryset.filter(
+            client__first_name__iexact=client
+        )
+
+    if invoice_date:
+        queryset = queryset.filter(
+            invoice_date=invoice_date
+        )
+
+
+    if status:
+        queryset = queryset.filter(
+            status__iexact=status
+        )
+
+    serializer = ShipmentSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_payments_by_param(request):
+    client = request.GET.get("client")
+    payment_date = request.GET.get("payment_date")
+    status = request.GET.get("status")
+    payment_method = request.GET.get("payment_method")
+    invoice = request.GET.get("invoice")
+   
+
+    queryset = Shipment.objects.all()
+
+    if client:
+        queryset = queryset.filter(
+            client__first_name__iexact=client
+        )
+
+    if payment_date:
+        queryset = queryset.filter(
+            payment_date=payment_date
+        )
+
+    if invoice:
+        queryset = queryset.filter(
+            invoice__iexact=invoice
+        )
+
+    if status:
+        queryset = queryset.filter(
+            status__iexact=status
+        )
+        
+    if payment_method:
+        queryset = queryset.filter(
+            payment_method__iexact=payment_method
+        )    
+
+    serializer = ShipmentSerializer(queryset, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
 def get_expidition_by_param(request):
     client = request.GET.get("client")
     shipment_date = request.GET.get("shipment_date")
@@ -81,7 +148,7 @@ def get_expidition_by_param(request):
 
     if shipment_date:
         queryset = queryset.filter(
-            client__name__iexact=shipment_date
+            shipment_date=shipment_date
         )
 
     if destination:

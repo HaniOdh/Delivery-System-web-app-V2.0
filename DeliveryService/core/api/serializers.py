@@ -133,12 +133,12 @@ class ShipmentSerializer(serializers.ModelSerializer):
             volume=validated_data['volume'],
             price_per_weight=service.price_per_weight,
             price_per_volume=service.price_per_volume,
-            base_price=destination.base_price
+            base_rate=destination.base_rate
             
         )
             
         validated_data['amount_ht'] = amount
-        if instance.invoice is  None:
+        if instance.invoice is None and invoice is not None:
             
             add_shipment_to_invoice(invoice =invoice,amount=amount)
             
@@ -156,6 +156,23 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = '__all__'
 
+    def create(self,  validated_data):
+        # Recalculate if important fields change
+
+        
+        
+        amount = validated_data['amount']
+        payment = super().create(validated_data)
+
+    
+        pay(payment = payment , amount=amount)
+        
+        
+
+            
+       
+        
+        return payment
 
     def update(self, instance, validated_data):
         # Recalculate if important fields change

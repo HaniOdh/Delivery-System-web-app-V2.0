@@ -8,6 +8,6 @@ def add_price_to_sold(client: Client , amount):
 
     
 
-    client.solld += amount
+    client.solld = client.solld + amount
     
     client.save(update_fields=["solld"])
