@@ -20,7 +20,7 @@
             </div>
 
             <div class="right">
-                <button class="btn primary" onclick="openModal()">+ Personnaliser</button>
+                <button class="btn primary" id="openModalBtn">+ Personnaliser</button>
             </div>
         </div>
 
@@ -31,34 +31,7 @@
         </div>
 
     </section>
-    <section class="fav-cards">
-        <div class="card">
-            <button class="remove-btn" title="Supprimer">×</button>
-            <div class="icon">📦</div>
-            <h3>Nouvelle expédition</h3>
-            <p>Créer et planifier une nouvelle expédition</p>
-        </div>
-
-        <div class="card">
-            <button class="remove-btn" title="Supprimer">×</button>
-            <div class="icon">🔗</div>
-            <h3>Consultation des expéditions</h3>
-            <p>Voir et gérer toutes les tournées actives</p>
-        </div>
-
-        <div class="card">
-            <button class="remove-btn" title="Supprimer">×</button>
-            <div class="icon">💳</div>
-            <h3>Facturation</h3>
-            <p>Accéder aux factures et paiements</p>
-        </div>
-        <div class="card">
-            <button class="remove-btn" title="Supprimer">×</button>
-            <div class="icon"></div>
-            <h3>Suivi des colis</h3>
-            <p>Suivre en temps réel la position des colis</p>
-        </div>
-    </section>
+    <section class="fav-cards" id="favCards"></section>
     <div class="fav-footer">
         <h3 class="icon"> How to use and manage favorites</h3>
         <ul>
@@ -69,39 +42,124 @@
     </div>
 
 </div>
-<!--
-<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+
+<div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modal">
         <div class="modal-header">
             <h2>Personnaliser les favoris</h2>
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <span class="close-btn" id="closeModalBtn">&times;</span>
         </div>
         <div class="modal-body">
             <p>Sélectionnez les fonctionnalités à ajouter à vos favoris :</p>
-            <div class="feature-list">
-                <div class="feature-item">
-                    <input type="checkbox" id="feature1" name="feature1" value="Nouvelle expédition">
-                    <label for="feature1">Nouvelle expédition</label>
-                </div>
-                <div class="feature-item">
-                    <input type="checkbox" id="feature2" name="feature2" value="Consultation des expéditions">
-                    <label for="feature2">Consultation des expéditions</label>
-                </div>
-                <div class="feature-item">
-                    <input type="checkbox" id="feature3" name="feature3" value="Facturation">
-                    <label for="feature3">Facturation</label>
-                </div>
-                <div class="feature-item">
-                    <input type="checkbox" id="feature4" name="feature4" value="Suivi des colis">
-                    <label for="feature4">Suivi des colis</label>
-                </div>
-            </div>
+            <div class="feature-list" id="featureList"></div>
         </div>
         <div class="modal-footer">
-            <button class="btn secondary" onclick="closeModal()">Annuler</button>
-            <button class="btn primary" onclick="saveFavorites()">Enregistrer</button>
+            <button class="btn secondary" id="cancelBtn">Annuler</button>
+            <button class="btn primary" id="saveBtn">Enregistrer</button>
         </div>
     </div>
-</div>  -->
-<script src="{% static 'js/favoris.js' %}"></script>
+</div>
+
+<script>
+// Toutes les fonctionnalités disponibles
+const allFeatures = [
+    { id: "expedition-new", title: "Nouvelle expédition", desc: "Créer et planifier une nouvelle expédition", icon: "📦", url: "/expedition/" },
+    { id: "expedition-suivi", title: "Suivi des colis", desc: "Suivre en temps réel la position des colis", icon: "📡", url: "/expedition/suivi/" },
+    { id: "expedition-tournee", title: "Gestion des tournées", desc: "Planifier et gérer les tournées", icon: "🔗", url: "/expedition/tournee/" },
+    { id: "billing", title: "Facturation", desc: "Gérer les factures clients", icon: "💳", url: "/facturation/" },
+    { id: "payments", title: "Paiements", desc: "Suivre et gérer les paiements", icon: "💰", url: "/facturation/paiements/" },
+    { id: "clients", title: "Clients", desc: "Gérer la base de données clients", icon: "👤", url: "/table/clients/" },
+    { id: "agents", title: "Agents", desc: "Gérer les agents du système", icon: "👔", url: "/table/agents/" },
+    { id: "drivers", title: "Chauffeurs", desc: "Gérer les chauffeurs", icon: "🚚", url: "/table/drivers/" },
+    { id: "vehicles", title: "Véhicules", desc: "Suivre la flotte de véhicules", icon: "🚛", url: "/table/vehicles/" },
+    { id: "destinations", title: "Destinations", desc: "Gérer les destinations", icon: "🗺️", url: "/table/destinations/" },
+    { id: "tarification", title: "Tarification", desc: "Configurer les tarifs", icon: "💲", url: "/table/tarification/" },
+    { id: "services-types", title: "Types de services", desc: "Gérer les types de services", icon: "🛠️", url: "/table/services-types/" },
+    { id: "incidents", title: "Incidents", desc: "Gérer et résoudre les incidents", icon: "⚠️", url: "/incident/" },
+    { id: "incident-stats", title: "Statistiques incidents", desc: "Consulter les statistiques", icon: "📈", url: "/incident/statistics/" },
+    { id: "reclamations", title: "Réclamations", desc: "Traiter les réclamations clients", icon: "📝", url: "/reclamation/" },
+    { id: "tables", title: "Tables", desc: "Accès aux tables de données", icon: "📊", url: "/table/" }
+];
+
+let favorites = JSON.parse(localStorage.getItem("delivery-favorites") || '["expedition-new", "expedition-suivi", "billing", "clients"]');
+
+function renderFavorites() {
+    const container = document.getElementById("favCards");
+    container.innerHTML = "";
+    
+    favorites.forEach(id => {
+        const feature = allFeatures.find(f => f.id === id);
+        if (!feature) return;
+        
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <button class="remove-btn" onclick="removeFavorite('${id}')" title="Supprimer">×</button>
+            <div class="icon">${feature.icon}</div>
+            <h3>${feature.title}</h3>
+            <p>${feature.desc}</p>
+        `;
+        card.onclick = (e) => {
+            if (!e.target.classList.contains('remove-btn')) {
+                window.location.href = feature.url;
+            }
+        };
+        container.appendChild(card);
+    });
+}
+
+function renderFeatureList() {
+    const list = document.getElementById("featureList");
+    list.innerHTML = "";
+    
+    allFeatures.forEach(feature => {
+        const item = document.createElement("div");
+        item.className = "feature-item";
+        item.innerHTML = `
+            <input type="checkbox" id="feat-${feature.id}" value="${feature.id}" ${favorites.includes(feature.id) ? 'checked' : ''}>
+            <div>
+                <label for="feat-${feature.id}">${feature.title}</label>
+                <small>${feature.desc}</small>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function removeFavorite(id) {
+    favorites = favorites.filter(f => f !== id);
+    localStorage.setItem("delivery-favorites", JSON.stringify(favorites));
+    renderFavorites();
+}
+
+document.getElementById("openModalBtn").onclick = function() {
+    document.getElementById("modalOverlay").classList.add("active");
+    document.body.style.overflow = "hidden";
+    renderFeatureList();
+};
+
+document.getElementById("closeModalBtn").onclick = 
+document.getElementById("cancelBtn").onclick = function() {
+    document.getElementById("modalOverlay").classList.remove("active");
+    document.body.style.overflow = "";
+};
+
+document.getElementById("saveBtn").onclick = function() {
+    const selected = Array.from(document.querySelectorAll('#featureList input:checked')).map(cb => cb.value);
+    favorites = selected;
+    localStorage.setItem("delivery-favorites", JSON.stringify(favorites));
+    renderFavorites();
+    document.getElementById("modalOverlay").classList.remove("active");
+    document.body.style.overflow = "";
+};
+
+document.getElementById("modalOverlay").onclick = function(e) {
+    if (e.target === this) {
+        this.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+};
+
+renderFavorites();
+</script>
 {% endblock %}
