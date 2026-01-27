@@ -66,9 +66,9 @@ class DashboardService:
             return None
 
         return [{
-            'country': destination.country,
-            'city': destination.city,
-            'count': destination.shipment_count
+            'country': destination['country'],
+            'city': destination['city'],
+            'count': destination['shipment_count']
         } for destination in top_destinations[:10]]
 
 
