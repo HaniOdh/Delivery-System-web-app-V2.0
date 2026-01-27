@@ -67,10 +67,10 @@ body{
 .menu-item:hover {
     background-color: #f0f4ff;
 }
+
 .menu-item.active {
     background-color: #2563eb;
     color: white;
-    
 }
 .logout button {
     width: 100%;
