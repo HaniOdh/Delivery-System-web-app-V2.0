@@ -82,3 +82,50 @@ function getCSRFToken() {
     }
     return cookieValue;
 }
+
+function updateReclamationStatus(selectElement) {
+    const reclamationId = selectElement.getAttribute('data-reclamation-id');
+    const newStatus = selectElement.value;
+    
+    console.log('Updating reclamation:', reclamationId, 'to status:', newStatus);
+    
+    // First, get the current complaint data
+    fetch(`/api/complaints/${reclamationId}/`)
+        .then(response => response.json())
+        .then(currentData => {
+            // Update with PUT (requires all fields)
+            const updatedData = {
+                ...currentData,
+                status: newStatus
+            };
+            
+            return fetch(`/api/complaints/${reclamationId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(updatedData)
+            });
+        })
+    .then(async response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Error data:', errorData);
+            const message = JSON.stringify(errorData, null, 2);
+            throw new Error(message || 'Failed to update status');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Status updated successfully:', data);
+        alert('Statut mis à jour avec succès!');
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+        alert('Erreur lors de la mise à jour du statut:\n' + error.message);
+        // Revert to previous value on error
+        location.reload();
+    });
+}

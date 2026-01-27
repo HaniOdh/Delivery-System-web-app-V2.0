@@ -1,9 +1,33 @@
 import datetime
 from django.db.models import Sum, Count
 from django.db.models.functions import ExtractMonth
-from sympy import Q
+from django.db import transaction
 
-from DeliveryService.core.models.models import Tour
+from core.models.models import Tour, Shipment, Incident
+
+def update_tour_statistics(tour):
+    """
+    Update tour statistics based on assigned shipments.
+    Calculates: nb_exp, distance (estimated), carb (fuel), incd (incidents)
+    """
+    if tour is None:
+        return
+    
+    # Count number of expeditions assigned to this tour
+    shipments = Shipment.objects.filter(tour=tour)
+    tour.nb_exp = shipments.count()
+    
+    # Count incidents related to shipments in this tour
+    tour.incd = Incident.objects.filter(shipment__tour=tour).count()
+    
+    # Calculate estimated fuel consumption (0.15 L/km is a common estimate)
+    if tour.distance > 0:
+        tour.carb = round(tour.distance * 0.15, 2)
+    else:
+        tour.carb = 0
+    
+    tour.save(update_fields=['nb_exp', 'carb', 'incd'])
+
 
 class tour_service:
    

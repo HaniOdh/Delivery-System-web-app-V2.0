@@ -69,8 +69,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error("Le montant du paiement doit être supérieur à 0");
                 }
                 
-                if (amountPaid > invoice.rest) {
-                    throw new Error(`Le montant du paiement (${amountPaid.toFixed(2)} DA) ne peut pas dépasser le reste à payer (${invoice.rest.toFixed(2)} DA)`);
+                // Allow overpayment up to 1 DA (for rounded amounts)
+                if (amountPaid > invoice.rest + 1) {
+                    throw new Error(`Le montant du paiement (${amountPaid.toFixed(2)} DA) ne peut pas dépasser le reste à payer + 1 DA (${(invoice.rest + 1).toFixed(2)} DA)`);
                 }
 
                 // Send payment

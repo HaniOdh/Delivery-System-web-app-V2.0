@@ -1,13 +1,20 @@
+import datetime
+from http import client
+from django.db.models import Count
+from django.db.models import Q, Sum
+from DeliveryService.core.models.models import Shipment, Tour
+from core.models import Client
+from core.models import Destination
+from django.db.models.functions import ExtractYear
+from core.models import Payment
+
+from django.db.models.functions import ExtractMonth
 from datetime import datetime
-from django.db.models import Count, Q, Sum
-from django.db.models.functions import ExtractYear, ExtractMonth
-from core.models.models import Shipment, Tour, Client, Destination, Payment
 class DashboardService:
-    #Commercial Analysis Services
     def identify_top_client_volume(self):
        
         top_client = Client.objects.annotate(
-            shipment_count=Count('shipment')
+            shipment_count=Count('shipments')
         ).order_by('-shipment_count')
 
         if not top_client:
@@ -59,7 +66,7 @@ class DashboardService:
         top_destinations = Destination.objects.values(
             'country', 'city'
         ).annotate(
-            shipment_count=Count('shipment')
+            shipment_count=Count('shipments')
         ).filter().order_by('-shipment_count')
 
         if not top_destinations:
@@ -142,7 +149,6 @@ class DashboardService:
        #////////////////////////////////////////////////////////////////////////
 
 
-    #Operational Analysis Services
 
     def get_tour_operational_analysis(self, year=None):
         if year is None:
@@ -152,7 +158,7 @@ class DashboardService:
         tour_stats = Tour.objects.filter(tour_date__year=year) \
             .annotate(month=ExtractMonth('tour_date')) \
             .values('month') \
-            .annotate(total_tours=Count('id')) \
+            .annotate(total_tours=Count('id_tour')) \
             .order_by('month')
 
         # 2. Initialize 12-month report
@@ -194,14 +200,14 @@ class DashboardService:
             year = datetime.now().year
 
         # 1. Query for incidents (Failed or Delayed) grouped by month and zone
-        # Accessing zone through destination relationship
+        # Assuming 'Shipment' has a 'zone' field (or 'city')
         incident_stats = Shipment.objects.filter(
             shipment_date__year=year
         ).filter(
             Q(status='Failed') | Q(status='Delayed') # Only look for problems
         ).annotate(
             month=ExtractMonth('shipment_date')
-        ).values('month', 'destination__zone').annotate(
+        ).values('month', 'zone').annotate(
             incident_count=Count('id')
         ).order_by('month', '-incident_count')
 
@@ -211,7 +217,7 @@ class DashboardService:
         
         for entry in incident_stats:
             report[entry['month']].append({
-                'zone': entry['destination__zone'],
+                'zone': entry['zone'],
                 'incidents': entry['incident_count']
             })
 
@@ -231,12 +237,12 @@ class DashboardService:
         # We calculate the total, success, failure, and delay for every zone every month
         raw_stats = Shipment.objects.filter(shipment_date__year=year).annotate(
             month=ExtractMonth('shipment_date')
-        ).values('month', 'destination__zone').annotate(
+        ).values('month', 'zone').annotate(
             total_count=Count('id'),
             success_count=Count('id', filter=Q(status='Delivered')),
             failed_count=Count('id', filter=Q(status='Failed')),
             delayed_count=Count('id', filter=Q(status='Delayed'))
-        ).order_by('month', 'destination__zone')
+        ).order_by('month', 'zone')
 
         # 2. Structure the data and apply your formulas
         monthly_report = {m: [] for m in range(1, 13)}
@@ -245,7 +251,7 @@ class DashboardService:
             total = entry['total_count']
             if total > 0:
                 zone_data = {
-                    'zone_name': entry['destination__zone'],
+                    'zone_name': entry['zone'],
                     'total_deliveries': total,
                     'success_rate': round((entry['success_count'] / total) * 100, 2),
                     'failure_rate': round((entry['failed_count'] / total) * 100, 2),
@@ -258,19 +264,21 @@ class DashboardService:
     
 
     #-----------------------------------------------------------------------
+    from django.db.models import Count, Q, Avg
+from django.db.models.functions import ExtractMonth
 
+class DashboardService:
     def get_top_drivers_analysis(self, year=None):
         if year is None:
             year = datetime.now().year
 
         # 1. Aggregate shipment data by Driver
-        # We assume Shipment has a link to Tour, and Tour has driver FK
+        # We assume Shipment has a link to Tour, and Tour has id_driver
         driver_stats = Shipment.objects.filter(
             tour__tour_date__year=year
         ).values(
-            'tour__driver_id', 
-            'tour__driver__first_name',
-            'tour__driver__last_name'
+            'tour__id_driver', 
+            'tour__id_driver__name' 
         ).annotate(
             total_deliveries=Count('id'),
             success_count=Count('id', filter=Q(status='Delivered')),
@@ -291,8 +299,8 @@ class DashboardService:
                 efficiency = d['success_count'] / d['total_tours'] if d['total_tours'] > 0 else 0
 
                 top_drivers.append({
-                    'driver_id': d['tour__driver_id'],
-                    'name': f"{d['tour__driver__first_name']} {d['tour__driver__last_name']}",
+                    'driver_id': d['tour__id_driver'],
+                    'name': d['tour__id_driver__name'],
                     'success_rate': round(success_rate, 2),
                     'punctuality_rate': round(100 - delay_rate, 2),
                     'efficiency_score': round(efficiency, 2),
@@ -303,53 +311,51 @@ class DashboardService:
         return sorted(top_drivers, key=lambda x: x['success_rate'], reverse=True)[:5]
     
 
+
     #----------------------
+    from django.db.models import Count
+from django.db.models.functions import TruncDate
+from datetime import timedelta
 
-    def get_peak_periods_logic(self, year=None):
-        if year is None:
-            year = datetime.now().year
-            
-        from django.db.models.functions import TruncDate
-        from datetime import timedelta
-        
-        # 1. Get daily volumes
-        daily_counts = Shipment.objects.filter(shipment_date__year=year) \
-            .annotate(date=TruncDate('shipment_date')) \
-            .values('date') \
-            .annotate(count=Count('id')) \
-            .order_by('date')
+def get_peak_periods_logic(self, year):
+    # 1. Get daily volumes
+    daily_counts = Shipment.objects.filter(shipment_date__year=year) \
+        .annotate(date=TruncDate('shipment_date')) \
+        .values('date') \
+        .annotate(count=Count('id')) \
+        .order_by('date')
 
-        if not daily_counts:
-            return []
+    if not daily_counts:
+        return []
 
-        # 2. Calculate the Average (Total Shipments / Number of active days)
-        total_shipments = sum(day['count'] for day in daily_counts)
-        avg_daily_volume = total_shipments / len(daily_counts)
+    # 2. Calculate the Average (Total Shipments / Number of active days)
+    total_shipments = sum(day['count'] for day in daily_counts)
+    avg_daily_volume = total_shipments / len(daily_counts)
 
-        # 3. Find continuous periods > average
-        high_activity_periods = []
-        current_period = None
+    # 3. Find continuous periods > average
+    high_activity_periods = []
+    current_period = None
 
-        for day in daily_counts:
-            if day['count'] > avg_daily_volume:
-                if current_period is None:
-                    # Start a new period
-                    current_period = {"start": day['date'], "end": day['date'], "days_count": 1}
-                else:
-                    # Continue the existing period
-                    current_period["end"] = day['date']
-                    current_period["days_count"] += 1
+    for day in daily_counts:
+        if day['count'] > avg_daily_volume:
+            if current_period is None:
+                # Start a new period
+                current_period = {"start": day['date'], "end": day['date'], "days_count": 1}
             else:
-                if current_period:
-                    # Period ended, save it if it lasted more than 1 day (optional)
-                    high_activity_periods.append(current_period)
-                    current_period = None
-        
-        # Catch the last period if the year ends on a high note
-        if current_period:
-            high_activity_periods.append(current_period)
+                # Continue the existing period
+                current_period["end"] = day['date']
+                current_period["days_count"] += 1
+        else:
+            if current_period:
+                # Period ended, save it if it lasted more than 1 day (optional)
+                high_activity_periods.append(current_period)
+                current_period = None
+    
+    # Catch the last period if the year ends on a high note
+    if current_period:
+        high_activity_periods.append(current_period)
 
-        return {
-            "average_threshold": round(avg_daily_volume, 2),
-            "periods": high_activity_periods
-        }
+    return {
+        "average_threshold": round(avg_daily_volume, 2),
+        "periods": high_activity_periods
+    }

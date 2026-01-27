@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .views import (
     agent_detail, create_agent, get_clients, client_detail,
     get_destinations, destination_detail,
@@ -12,7 +11,7 @@ from .views import (
     get_payments, payment_detail,
     get_incidents, incident_detail,
     get_complaints, complaint_detail,
-    get_expidition_by_param,get_payments_by_param,get_invoices_by_param,upload_incident_image,
+    get_expidition_by_param,get_payments_by_param,get_invoices_by_param,
 )
 
 urlpatterns = [
@@ -40,7 +39,7 @@ urlpatterns = [
     path('invoices/filter/', get_invoices_by_param),
 
     path('shipments/', get_shipments),
-    path('shipments/<int:pk>/', shipment_detail),
+    path('shipments/<int:pk>/', shipment_detail, name='shipment-detail'),
     path('shipments/filter/', get_expidition_by_param),
 
     path('payments/', get_payments),
@@ -49,13 +48,11 @@ urlpatterns = [
 
     path('incidents/', get_incidents),
     path('incidents/<int:pk>/', incident_detail),
-    path('incidents/<int:incident_id>/upload-image/', upload_incident_image),
-
 
     path('complaints/', get_complaints),
     path('complaints/<int:pk>/', complaint_detail),
 
     path('agents/', create_agent, name='create_agent'), 
-    path('agents/<int:pk>/', agent_detail, name='agent_detail'),  
+    path('agents/<int:pk>/', agent_detail, name='agent_detail'),  #
 ]
 

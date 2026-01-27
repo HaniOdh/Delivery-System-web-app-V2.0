@@ -88,14 +88,18 @@
         color: #555;
     }
 
-    .modal-content input {
+    .modal-content input,
+    .modal-content select {
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 8px;
         font-size: 14px;
+        font-family: inherit;
+        background-color: #fff;
     }
 
-    .modal-content input:focus {
+    .modal-content input:focus,
+    .modal-content select:focus {
         outline: none;
         border-color: #2563eb;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -131,11 +135,11 @@
                 </select>
             </div>
             <div class="right">
-                <button type="submit" class="btn danger">
+                <button type="button" class="btn danger" id="deleteExpeditionBtn">
                     <i class="fa-solid fa-trash"></i>
                 </button>
 
-                <button type="button" class="btn light">
+                <button type="button" class="btn light" id="printExpeditionBtn">
                     <i class="fa-solid fa-print"></i> Print
                 </button>
 
@@ -152,7 +156,13 @@
             <thead>
                 
                 <tr>
-                    <th>Expedition ID</th>
+                    <th>
+                        
+                        <label>
+                            <input type="checkbox" id="selectAll">
+                            ID
+                        </label>
+                    </th>
                     <th>Client</th>
                     <th>Destination</th>
                     <th>Service</th>
@@ -169,9 +179,9 @@
                     <td>{{ expedition.client }}</td>
                     <td>{{ expedition.destination }}</td>
                     <td>{{ expedition.service }}</td>
-                    <td>{{ expedition.poid }} kg</td>
+                    <td>{{ expedition.weight }} kg</td>
                     <td>{{ expedition.volume }} m³</td>
-                    <td>{{ expedition.montant }}</td>
+                    <td>{{ expedition.amount_ht }} DA</td>
                     <td class="status">
                         {% if expedition.status == "disponible" %}
                             <span class="status-badge status-disponible">{{ expedition.status }}</span>
@@ -291,25 +301,44 @@
 
         <form id="addExpeditionForm">
             {% csrf_token %}
+            <label for="shipment_date">Shipment Date</label>
+            <input type="date" id="shipment_date" name="shipment_date" required>
+            
             <label for="client">Client</label>
-            <input type="text" id="client" name="client" placeholder="Client Name" required>
+            <select id="client" name="client" required>
+                <option value="">-- Select Client --</option>
+            </select>
+            
             <label for="destination">Destination</label>
-            <input type="text" id="destination" name="destination" placeholder="Destination" required>
+            <select id="destination" name="destination" required>
+                <option value="">-- Select Destination --</option>
+            </select>
+            
             <label for="service">Service</label>
-            <input type="text" id="service" name="service" placeholder="Service Type" required>
-            <label for="poid">Poid (kg)</label>
-            <input type="number" id="poid" name="poid" min="0" step="0.01" placeholder="Poid in kg" required>
+            <select id="service" name="service" required>
+                <option value="">-- Select Service --</option>
+            </select>
+            
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" name="weight" min="0" step="0.01" placeholder="Weight in kg" required>
+            
             <label for="volume">Volume (m³)</label>
             <input type="number" id="volume" name="volume" min="0" step="0.01" placeholder="Volume in m³" required>
-            <label for="montant">Montant</label>
-            <input type="number" id="montant" name="montant" min="0" step="0.01" placeholder="Montant" required>
+            
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description" placeholder="Description" required>
+            
             <label for="status">Status</label>
             <select id="status" name="status" required>
                 <option value="disponible">disponible</option>
                 <option value="en_mission">en_mission</option>
                 <option value="offline">offline</option>
             </select>
-
+            
+            <label for="invoice">Facture (Optionnel)</label>
+            <select id="invoice" name="invoice">
+                <option value="">-- Pas de facture --</option>
+            </select>
 
             <button type="submit" class="btn primary">Save Expedition</button>
         </form>

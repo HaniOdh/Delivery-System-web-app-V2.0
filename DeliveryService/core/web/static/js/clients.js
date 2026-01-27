@@ -4,8 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("addClientModal");
     const closeBtn = document.getElementById("closeModal");
     const form = document.getElementById("addClientForm");
-    const deleteBtn = document.querySelector('.btn.danger');
-    const printBtn = document.querySelector('.btn.light');
+    const deleteBtn = document.getElementById('deleteClientBtn');
+    const printBtn = document.getElementById('printClientBtn');
 
     // -----------------------
     // Open & Close Modal

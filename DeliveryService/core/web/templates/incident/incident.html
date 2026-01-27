@@ -43,10 +43,12 @@
             
         
         <div class="incident-list">
-            {% for incident in incidents %}
+            {% for incident in page_obj %}
             <div class="incident-card">
                 <div class="incident-img">
-                    
+                    {% if incident.photo %}
+                        <img src="{{ incident.photo.url }}" alt="Incident photo">
+                    {% endif %}
                 </div>
                 <div class="incident-info">
                     <div class="incident-top">
@@ -73,24 +75,12 @@
                             <small> {{incident.piece}} piece(s) jointe(s)</small>
                         </div>
                         
-                        <form method="post" action="{% url 'incident_update_status' incident.id %}">
-                            {% csrf_token %}
-                            <select name="status" onchange="this.form.submit()" class="status-select">
-
-                                <option value="new" {% if incident.status == 'new' %}selected{% endif %}>
-                                    New
-                                </option>
-
-                                <option value="ongoing" {% if incident.status == 'ongoing' %}selected{% endif %}>
-                                    On going
-                                </option>
-
-                                <option value="resolved" {% if incident.status == 'resolved' %}selected{% endif %}>
-                                    Resolved
-                                </option>
-
-                            </select>
-                        </form>
+                        <!-- Status update dropdown -->
+                        <select class="status-select" data-incident-id="{{ incident.id }}" data-original-status="{{ incident.status }}" onchange="updateIncidentStatus(this)">
+                            <option value="new" {% if incident.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="ongoing" {% if incident.status == 'ongoing' %}selected{% endif %}>On going</option>
+                            <option value="resolved" {% if incident.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
                     </div>
                     
                     
@@ -157,8 +147,8 @@
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="4" placeholder="Détaillez l'incident" required></textarea>
 
-            <label for="incident_date">Date</label>
-            <input type="date" id="incident_date" name="incident_date" required>
+            <label for="incident_date">Date et Heure</label>
+            <input type="datetime-local" id="incident_date" name="incident_date" required>
 
             <label for="piece_count">Nbr de pièces</label>
             <input type="number" id="piece_count" name="piece_count" min="0" value="0" required>

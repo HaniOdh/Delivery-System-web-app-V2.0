@@ -106,7 +106,7 @@
             
         
         <div class="incident-list">
-            {% for reclamation in reclamations %}
+            {% for reclamation in page_obj %}
             <div class="incident-card">
                 
                 <div class="incident-info">
@@ -135,24 +135,12 @@
                             
                         </div>
                         
-                        <form method="post" action="{% url 'incident_update_status' incident.id %}">
-                            {% csrf_token %}
-                            <select name="status" onchange="this.form.submit()" class="status-select">
-
-                                <option value="new" {% if reclamation.status == 'new' %}selected{% endif %}>
-                                    New
-                                </option>
-
-                                <option value="ongoing" {% if reclamation.status == 'ongoing' %}selected{% endif %}>
-                                    On going
-                                </option>
-
-                                <option value="resolved" {% if reclamation.status == 'resolved' %}selected{% endif %}>
-                                    Resolved
-                                </option>
-
-                            </select>
-                        </form>
+                        <!-- Status update dropdown -->
+                        <select class="status-select" data-reclamation-id="{{ reclamation.id }}" onchange="updateReclamationStatus(this)">
+                            <option value="new" {% if reclamation.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="ongoing" {% if reclamation.status == 'ongoing' %}selected{% endif %}>On going</option>
+                            <option value="resolved" {% if reclamation.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
                     </div>
                     
                     

@@ -31,12 +31,22 @@ document.addEventListener("DOMContentLoaded", function () {
         form.addEventListener("submit", function (event) {
             event.preventDefault();
 
+            // Get form values using getElementById
+            const clientInput = document.getElementById("client");
+            const invoiceDateInput = document.getElementById("invoice_date");
+
+            if (!clientInput || !invoiceDateInput) {
+                console.error("Form fields not found!");
+                alert("Erreur: champs du formulaire introuvables");
+                return;
+            }
+
             // Collect form data - le backend calcule automatiquement TVA, TTC, rest
             const data = {
-                client: parseInt(form.client.value, 10),
-                invoice_date: form.invoice_date.value,
-                amount_ht: parseFloat(form.amount_ht.value) || 0,
-                status: form.status ? form.status.value : 'non-payee' // Optionnel si le champ existe
+                client: parseInt(clientInput.value, 10),
+                invoice_date: invoiceDateInput.value,
+                amount_ht: 0,  // La facture commence à 0, les expéditions ajouteront leur montant
+                status: 'non-payee'  // Statut initial pour une nouvelle facture
             };
 
             console.log("Données facture à envoyer:", data);
