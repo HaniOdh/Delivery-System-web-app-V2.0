@@ -1,10 +1,49 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log('=== SUIVI.JS LOADED ===');
     
+    // ========================================
+    // NOUVELLE FONCTIONNALITÉ : RECHERCHE
+    // ========================================
+    const searchInput = document.getElementById("search");
+    
+    if (searchInput) {
+        let timeout = null;
+        
+        searchInput.addEventListener("input", function() {
+            clearTimeout(timeout);
+            
+            timeout = setTimeout(() => {
+                const searchValue = searchInput.value.trim();
+                let url = window.location.pathname + '?';
+                
+                if (searchValue) {
+                    url += `search=${encodeURIComponent(searchValue)}`;
+                }
+                
+                window.location.href = url;
+            }, 500);
+        });
+        
+        // Recherche avec Enter
+        searchInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                clearTimeout(timeout);
+                
+                const searchValue = searchInput.value.trim();
+                let url = window.location.pathname + '?';
+                
+                if (searchValue) {
+                    url += `search=${encodeURIComponent(searchValue)}`;
+                }
+                
+                window.location.href = url;
+            }
+        });
+    }
+    
     const checkboxes = document.querySelectorAll('.expedition-checkbox');
     const rows = document.querySelectorAll('.expedition-row');
     let selectedExpeditionId = null;
-
     console.log('Found checkboxes:', checkboxes.length);
     console.log('Found rows:', rows.length);
 
@@ -12,6 +51,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const historiqueBtn = document.querySelector('.history-btn');
     const modal = document.getElementById('historiqueModal');
     const closeBtn = document.getElementById('closeModal');
+
+
+
+    
+
+
 
     // Fonction pour charger les détails d'une expédition
     function loadExpeditionDetails(expeditionId) {

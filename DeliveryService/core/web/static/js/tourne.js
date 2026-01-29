@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; margin-bottom: 6px; background: white;">
                 <label style="display: flex; align-items: start; cursor: pointer;">
                     <input type="checkbox" class="shipment-checkbox-modal" value="${shipment.id}" 
-                           style="margin-top: 4px; margin-right: 10px;" onchange="updateShipmentCount()">
+                            style="margin-top: 4px; margin-right: 10px;" onchange="updateShipmentCount()">
                     <div style="flex: 1; font-size: 13px;">
                         <div style="font-weight: 600; color: #111827; margin-bottom: 2px;">
                             ${shipment.tracking_number}
@@ -140,14 +140,32 @@ document.addEventListener("DOMContentLoaded", function () {
             renderShipmentsInModal(filtered);
         });
     }
-
+    const searchTourneeInput = document.getElementById("searchtournee");
+    if (searchTourneeInput) {
+        searchTourneeInput.addEventListener("input", (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const tableRows = document.querySelectorAll('tbody tr');
+            
+            tableRows.forEach(row => {  
+                const dateCell = row.querySelectorAll('td')[1];        
+                if (dateCell) {
+                    const dateText = dateCell.textContent.toLowerCase();
+                    if (dateText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
     // -----------------------
     // Open & Close Modal
     // -----------------------
     if (openBtn && modal && closeBtn) {
         openBtn.addEventListener("click", () => {
             modal.style.display = "block";
-            loadShipmentsInModal();  // Charger les expéditions quand le modal s'ouvre
+            loadShipmentsInModal();  // Charger les expéditions quand le modal s ouvre
         });
 
         closeBtn.addEventListener("click", () => {
@@ -417,7 +435,7 @@ function renderShipmentsList(shipments) {
         <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin-bottom: 8px; background: #f9fafb;">
             <label style="display: flex; align-items: start; cursor: pointer;">
                 <input type="checkbox" class="shipment-checkbox" value="${shipment.id}" 
-                       style="margin-top: 4px; margin-right: 10px;" onchange="updateSelectedCount()">
+                        style="margin-top: 4px; margin-right: 10px;" onchange="updateSelectedCount()">
                 <div style="flex: 1;">
                     <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">
                         ${shipment.tracking_number}
