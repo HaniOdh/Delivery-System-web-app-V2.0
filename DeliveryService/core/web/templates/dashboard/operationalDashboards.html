@@ -23,7 +23,7 @@
         <div class="statistics-overview">
             
             <div class="statistic-cards">
-                <div class="statistic-card ">
+                <div class="statistic-card wide">
                     <div class="card-header-stat">
                         <h4>Tour Analysis</h4>
                     </div>
@@ -91,11 +91,57 @@
                     <div class="card-header-stat">
                         <h4>Peak Activity Periods</h4>
                     </div>
+
+                    <div class="peak-dashboard">
+
+    <!-- Average -->
+    <div class="peak-average">
+        <span class="label">Average Daily Shipments</span>
+        <span class="value">
+            {{ peak_data.average_threshold|default:0 }}
+        </span>
+    </div>
+
+    <!-- Chart -->
+    <div class="peak-chart">
+        <canvas id="peakPeriodsChart"></canvas>
+    </div>
+
+    <!-- Table -->
+    <div class="peak-table-wrapper">
+        <table class="peak-table">
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Days</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if peak_data.periods %}
+                    {% for period in peak_data.periods %}
+                    <tr>
+                        <td>{{ period.start }}</td>
+                        <td>{{ period.end }}</td>
+                        <td>{{ period.days_count }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="no-data">No peak periods detected</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
                 </div>
             </div>
         </div>
+
     </section>
-    
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -339,6 +385,49 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    const peakPeriods = {{ peak_data.periods|default:"[]"|safe }};
+
+    const labels = peakPeriods.length
+        ? peakPeriods.map(p => `${p.start} → ${p.end}`)
+        : ['No Data'];
+
+    const values = peakPeriods.length
+        ? peakPeriods.map(p => p.days_count)
+        : [0];
+
+    const peakCtx = document.getElementById('peakPeriodsChart');
+    if (peakCtx) {
+        new Chart(peakCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Peak Duration (Days)',
+                    data: values,
+                    backgroundColor: '#6f42c1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
 });
 </script>
 
