@@ -50,6 +50,78 @@
     margin-bottom: 10px;
 }
 
+/* Geographic Incident Analysis */
+.geographic-analysis-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.geographic-chart {
+    position: relative;
+    height: 300px;
+}
+
+/* Top Drivers Section */
+.drivers-table-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.drivers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.drivers-table thead {
+    background-color: #e9ecef;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.drivers-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+}
+
+.drivers-table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.drivers-table tbody tr:hover {
+    background-color: #fff;
+}
+
+.drivers-table .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-primary {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
 .chart-container {
     position: relative;
     width: 100%;
@@ -66,9 +138,85 @@
     border: 1px solid #dee2e6;
 }
 
+/* Statistic Cards */
+.statistic-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.statistic-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.statistic-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.card-header-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header-stat h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.icon-success {
+    background-color: #d4edda;
+    color: #28a745;
+}
+
+.statistic-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin: 10px 0;
+}
+
 /* Responsive Design for Charts */
+@media (max-width: 1200px) {
+    .statistic-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
-    .tour-chart {
+    .tour-chart,
+    .geographic-chart {
         height: 250px;
+    }
+    
+    .statistic-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .drivers-table {
+        font-size: 12px;
+    }
+    
+    .drivers-table th,
+    .drivers-table td {
+        padding: 8px;
     }
 }
