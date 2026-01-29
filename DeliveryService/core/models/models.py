@@ -74,8 +74,13 @@ class Tour(models.Model):
     distance = models.FloatField()
     duration = models.FloatField()
     status = models.CharField(max_length=50)
-    driver = models.ForeignKey(Driver, on_delete=models.RESTRICT )
+    driver = models.ForeignKey(Driver, on_delete=models.RESTRICT)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.RESTRICT)
+    
+    # Computed/tracked fields
+    nb_exp = models.IntegerField(default=0, verbose_name="Number of Expeditions")
+    carb = models.FloatField(default=0, verbose_name="Fuel Consumption (L)")
+    incd = models.IntegerField(default=0, verbose_name="Number of Incidents")
 
     def __str__(self):
         return f"Tour {self.id}"
@@ -86,6 +91,7 @@ class Invoice(models.Model):
     amount_ht = models.FloatField( default=0)
     amount_vat = models.FloatField(default=0.19)
     amount_ttc = models.FloatField( default=0)
+    rest = models.FloatField(default=0)
     status = models.CharField(max_length=50)
     client = models.ForeignKey(Client, on_delete=models.RESTRICT)
 
@@ -126,32 +132,21 @@ class Payment(models.Model):
 class Incident(models.Model):
     incident_type = models.CharField(max_length=100)
     description = models.TextField()
-    incident_date = models.DateField()
+    incident_date = models.DateTimeField()
+    piece_count = models.PositiveIntegerField(default=0)
+    photo = models.ImageField(upload_to="incidents/", null=True, blank=True)
     shipment = models.ForeignKey(Shipment, on_delete=models.RESTRICT)
     tour = models.ForeignKey(Tour, on_delete=models.RESTRICT)
     status = models.CharField(max_length=100,default='new')
     
-    
     def __str__(self):
         return self.incident_type
-    
-class IncidentImage(models.Model):
-    incident = models.ForeignKey(
-        Incident,
-        on_delete=models.CASCADE,
-        related_name="images"
-    )
-    image = models.ImageField(upload_to="incidents/")
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Image for {self.incident.incident_type}"    
 
 
 class Complaint(models.Model):
     subject = models.CharField(max_length=100)
     description = models.TextField()
-    complaint_date = models.DateField()
+    complaint_date = models.DateTimeField()
     status = models.CharField(max_length=50)
     client = models.ForeignKey(Client, on_delete=models.RESTRICT)
     shipment = models.ForeignKey(Shipment, on_delete=models.RESTRICT)
@@ -190,4 +185,14 @@ class Profile(models.Model):
     def is_admin(self):
         return self.role == 'admin'
 
+class ShipmentHistory(models.Model):
+    shipment=models.ForeignKey('Shipment', on_delete=models.CASCADE, related_name='history')
+    status=models.CharField(max_length=100)
+    location=models.CharField(max_length=255,blank=True,null=True)
+    driver=models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
+    message=models.TextField(blank=True,null=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 

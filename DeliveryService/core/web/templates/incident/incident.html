@@ -43,10 +43,12 @@
             
         
         <div class="incident-list">
-            {% for incident in incidents %}
+            {% for incident in page_obj %}
             <div class="incident-card">
                 <div class="incident-img">
-                    
+                    {% if incident.photo %}
+                        <img src="{{ incident.photo.url }}" alt="Incident photo">
+                    {% endif %}
                 </div>
                 <div class="incident-info">
                     <div class="incident-top">
@@ -73,24 +75,12 @@
                             <small> {{incident.piece}} piece(s) jointe(s)</small>
                         </div>
                         
-                        <form method="post" action="{% url 'incident_update_status' incident.id %}">
-                            {% csrf_token %}
-                            <select name="status" onchange="this.form.submit()" class="status-select">
-
-                                <option value="new" {% if incident.status == 'new' %}selected{% endif %}>
-                                    New
-                                </option>
-
-                                <option value="ongoing" {% if incident.status == 'ongoing' %}selected{% endif %}>
-                                    On going
-                                </option>
-
-                                <option value="resolved" {% if incident.status == 'resolved' %}selected{% endif %}>
-                                    Resolved
-                                </option>
-
-                            </select>
-                        </form>
+                        <!-- Status update dropdown -->
+                        <select class="status-select" data-incident-id="{{ incident.id }}" data-original-status="{{ incident.status }}" onchange="updateIncidentStatus(this)">
+                            <option value="new" {% if incident.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="ongoing" {% if incident.status == 'ongoing' %}selected{% endif %}>On going</option>
+                            <option value="resolved" {% if incident.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
                     </div>
                     
                     
@@ -157,8 +147,8 @@
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="4" placeholder="Détaillez l'incident" required></textarea>
 
-            <label for="incident_date">Date</label>
-            <input type="date" id="incident_date" name="incident_date" required>
+            <label for="incident_date">Date et Heure</label>
+            <input type="datetime-local" id="incident_date" name="incident_date" required>
 
             <label for="piece_count">Nbr de pièces</label>
             <input type="number" id="piece_count" name="piece_count" min="0" value="0" required>
@@ -175,12 +165,18 @@
                 <option value="ongoing">On going</option>
                 <option value="resolved">Resolved</option>
             </select>
-
-            <label for="shipment">Shipment (ID)</label>
-            <input type="number" id="shipment" name="shipment" min="1" placeholder="ID shipment" required>
-
-            <label for="tour">Tour (ID)</label>
-            <input type="number" id="tour" name="tour" min="1" placeholder="ID tour" required>
+            <div class="form-field">
+                <label for="shipment">Shipment (ID)</label>
+                <select id="shipment" name="shipment" required>
+                    <option value="">--Selectionner--</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="tour">Tour (ID)</label>
+                <select id ="tour" name="tour" required>
+                    <option value="">--Selectionner--</option>
+                </select>
+            </div>
 
             <button type="submit" class="btn primary">Save Incident</button>
         </form>

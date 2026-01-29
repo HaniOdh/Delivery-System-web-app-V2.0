@@ -41,14 +41,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for expedition in expeditions %}
+                    {% for expedition in page_obj %}
                     <tr class="expedition-row" data-expedition-id="{{ expedition.id }}">
                         <td>
                             <input type="checkbox" class="expedition-checkbox" value="EXP-{{ expedition.id }}" data-expedition-id="{{ expedition.id }}">
                         </td>
                         <td>EXP-{{ expedition.id }}</td>
-                        <td>{{ expedition.client.name }}</td>
-                        <td>{{ expedition.destination.address }}</td>
+                        <td>{{ expedition.client }}</td>
+                        <td>{{ expedition.destination }}</td>
                     </tr>
                     {% empty %}
                     <tr class="expedition-row">
@@ -130,32 +130,32 @@
 
                 <div class="info-item">
                     <span class="info-label">Client</span>
-                    <span class="info-value">{{ client_name|default:"Potato Man" }}</span>
+                    <span class="info-value" id="client-name">{{ client_name|default:"Potato Man" }}</span>
                 </div>
 
                 <div class="info-item">
                     <span class="info-label">Date de création</span>
-                    <span class="info-value">{{ creation_date|default:"22/01/202" }}</span>
+                    <span class="info-value" id="creation-date">{{ creation_date|default:"22/01/202" }}</span>
                 </div>
 
                 <div class="info-item">
                     <span class="info-label">Destination</span>
-                    <span class="info-value">{{ destination|default:"Khenchela" }}</span>
+                    <span class="info-value" id="destination-name">{{ destination|default:"Khenchela" }}</span>
                 </div>
 
                 <div class="info-item">
                     <span class="info-label">Poids / Volume</span>
-                    <span class="info-value">{{ weight_volume|default:"3.8" }}kg/{{ volume|default:"0.2" }}m³</span>
+                    <span class="info-value" id="weight-volume">{{ weight|default:"3.8" }}kg/{{ volume|default:"0.2" }}m³</span>
                 </div>
 
                 <div class="info-item">
                     <span class="info-label">Type Service</span>
-                    <span class="info-value">{{ service_type|default:"Express" }}</span>
+                    <span class="info-value" id="service-type">{{ service_type|default:"Express" }}</span>
                 </div>
 
                 <div class="info-item">
                     <span class="info-label">Montant</span>
-                    <span class="info-value price">{{ montant|default:"4500" }} DA</span>
+                    <span class="info-value price" id="amount">{{ amount_ht|default:"4500" }} DA</span>
                 </div>
 
             </div>
@@ -163,18 +163,18 @@
 
         <div style="margin-bottom: 1.5rem;">
             <div class="section-title">Description</div>
-            <div class="section-content">{{ description|default:"Description of the expedition" }}</div>
+            <div class="section-content" id="description">{{ description|default:"Description of the expedition" }}</div>
         </div>
 
         <div>
             <div class="section-title">Incident</div>
-            <div class="section-content">
+            <div class="section-content" id="incident">
                 {{ incident_description|default:"No incident" }}
             </div>
         </div>
 
             <button class="history-btn">Historique</button>
-        </div>
+        
         <div id="historiqueModal" class="modal-historique">
             <div class="modal-content-historique">
                 <div class="modal-header-historique">

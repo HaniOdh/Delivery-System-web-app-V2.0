@@ -7,6 +7,60 @@ document.addEventListener("DOMContentLoaded", function () {
     const deleteBtn = document.querySelector('.btn.danger');
     const printBtn = document.querySelector('.btn.light');
 
+    function loadDropdownOptions() {
+        console.log("Loading dropdown options...");
+        fetch("/api/clients/")
+            .then(response => {
+                console.log("Clients response status:", response.status);
+                return response.json();
+            })
+            .then(clients => {
+                console.log("Clients loaded:", clients);
+                const clientSelect = document.getElementById("client");
+                if (!clientSelect) {
+                    console.error("Client select element not found!");
+                    return;
+                }
+                clientSelect.innerHTML = '<option value="">-- Sélectionner un client --</option>';
+                clients.forEach(client => {
+                    const option = document.createElement("option");
+                    option.value = client.id;
+                    option.textContent = `${client.first_name} ${client.last_name}${client.email ? ' (' + client.email + ')' : ''}`;
+                    clientSelect.appendChild(option);
+                });
+                
+                console.log("Clients added to select:", clientSelect.options.length);
+            })
+            .catch(error => {
+                console.error("Error loading clients:", error);
+                alert("Impossible de charger la liste des clients");
+            });
+        fetch("/api/invoices/")
+            .then(response =>{
+                console.log("Invoices response status:", response.status);
+                return response.json();
+            })
+            .then(invoices => {
+                console.log("Invoices loaded:", invoices);
+                const invoiceSelect = document.getElementById("invoice");
+                if (!invoiceSelect) {
+                    console.error("Invoice select element not found!");
+                    return;
+                }
+                invoiceSelect.innerHTML = '<option value="">-- Sélectionner une facture --</option>';
+                invoices.forEach(invoice => {
+                    const option = document.createElement("option");
+                    option.value = invoice.id;
+                    option.textContent = `INV-${invoice.id} (Client ID: ${invoice.client}) - Reste: ${invoice.rest.toFixed(2)} DA`;
+                    invoiceSelect.appendChild(option);
+                });
+                
+                console.log("Invoices added to select:", invoiceSelect.options.length);
+            })
+            .catch(error => console.error("Error loading invoices:", error));
+    }
+    loadDropdownOptions();
+    
     // -----------------------
     // Open & Close Modal
     // -----------------------
@@ -69,8 +123,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error("Le montant du paiement doit être supérieur à 0");
                 }
                 
-                if (amountPaid > invoice.rest) {
-                    throw new Error(`Le montant du paiement (${amountPaid.toFixed(2)} DA) ne peut pas dépasser le reste à payer (${invoice.rest.toFixed(2)} DA)`);
+                // Allow overpayment up to 1 DA (for rounded amounts)
+                if (amountPaid > invoice.rest + 1) {
+                    throw new Error(`Le montant du paiement (${amountPaid.toFixed(2)} DA) ne peut pas dépasser le reste à payer + 1 DA (${(invoice.rest + 1).toFixed(2)} DA)`);
                 }
 
                 // Send payment

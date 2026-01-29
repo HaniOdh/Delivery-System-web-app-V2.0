@@ -7,6 +7,37 @@ document.addEventListener("DOMContentLoaded", function () {
     const deleteBtn = document.querySelector('.btn.danger');
     const printBtn = document.querySelector('.btn.light');
 
+    function loadDropdownOptions() {
+        console.log("Loading clients...");
+        fetch("/api/clients/")
+            .then(response => {
+                console.log("Clients response status:", response.status);
+                return response.json();
+            })
+            .then(clients => {
+                console.log("Clients loaded:", clients);
+                const clientSelect = document.getElementById("client");
+                if (!clientSelect) {
+                    console.error("Client select element not found!");
+                    return;
+                }
+                clientSelect.innerHTML = '<option value="">-- Sélectionner un client --</option>';
+                clients.forEach(client => {
+                    const option = document.createElement("option");
+                    option.value = client.id;
+                    option.textContent = `${client.first_name} ${client.last_name}${client.email ? ' (' + client.email + ')' : ''}`;
+                    clientSelect.appendChild(option);
+                });
+                
+                console.log("Clients added to select:", clientSelect.options.length);
+            })
+            .catch(error => {
+                console.error("Error loading clients:", error);
+                alert("Impossible de charger la liste des clients");
+            });
+    }
+    loadDropdownOptions();
+
     // -----------------------
     // Open & Close Modal
     // -----------------------
@@ -31,12 +62,22 @@ document.addEventListener("DOMContentLoaded", function () {
         form.addEventListener("submit", function (event) {
             event.preventDefault();
 
+            // Get form values using getElementById
+            const clientInput = document.getElementById("client");
+            const invoiceDateInput = document.getElementById("invoice_date");
+
+            if (!clientInput || !invoiceDateInput) {
+                console.error("Form fields not found!");
+                alert("Erreur: champs du formulaire introuvables");
+                return;
+            }
+
             // Collect form data - le backend calcule automatiquement TVA, TTC, rest
             const data = {
-                client: parseInt(form.client.value, 10),
-                invoice_date: form.invoice_date.value,
-                amount_ht: parseFloat(form.amount_ht.value) || 0,
-                status: form.status ? form.status.value : 'non-payee' // Optionnel si le champ existe
+                client: parseInt(clientInput.value, 10),
+                invoice_date: invoiceDateInput.value,
+                amount_ht: 0,  // La facture commence à 0, les expéditions ajouteront leur montant
+                status: 'non-payee'  // Statut initial pour une nouvelle facture
             };
 
             console.log("Données facture à envoyer:", data);

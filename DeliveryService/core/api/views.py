@@ -1,29 +1,23 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .permissions import IsAdmin
 from core.services.client_service import add_price_to_sold
 from core.services.payment_service import pay
-from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from rest_framework import status, viewsets
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
-
+from django.http import JsonResponse
 
 from core.models.models import (
-    Client, Shipment, Driver, Vehicle,
+    Client, Shipment, Driver, ShipmentHistory, Vehicle,
     Destination, ServiceType, 
-    Tour, Invoice, Payment, Incident, Complaint,Profile,IncidentImage
+    Tour, Invoice, Payment, Incident, Complaint,Profile
 )
 
 from .serializers import (
     ClientSerializer, DestinationSerializer, ServiceTypeSerializer,
-     DriverSerializer, VehicleSerializer,
+    DriverSerializer, VehicleSerializer,
     TourSerializer, InvoiceSerializer, ShipmentSerializer,
-    IncidentSerializer, ComplaintSerializer,PaymentSerializer,IncidentImageSerializer
+    IncidentSerializer, ComplaintSerializer,PaymentSerializer
 )
 
 
@@ -38,18 +32,30 @@ def list_create(model, serializer_class):
             return Response(serializer.data)
 
         if request.method == 'POST':
+            print(f"\n{'='*50}")
+            print(f"Creating {model.__name__}")
+            print(f"Request data: {request.data}")
+            print(f"Request FILES: {request.FILES}")
+            
             serializer = serializer_class(data=request.data)
 
             if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    obj = serializer.save()
+                    print(f"✓ {model.__name__} created successfully: {obj.id}")
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    print(f"✗ Error saving {model.__name__}:", str(e))
+                    return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                print(f"✗ Validation errors for {model.__name__}:", serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     return view
 
 
 def detail_view(model, serializer_class):
-    @api_view(['GET', 'PUT', 'DELETE'])
+    @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
     def view(request, pk):
         try:
             obj = model.objects.get(pk=pk)
@@ -61,6 +67,13 @@ def detail_view(model, serializer_class):
 
         if request.method == 'PUT':
             serializer = serializer_class(obj, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.method == 'PATCH':
+            serializer = serializer_class(obj, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -217,22 +230,6 @@ def handle_invoice(request, pk):
         
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
-def upload_incident_image(request, incident_id):
-    try:
-        incident = Incident.objects.get(id=incident_id)
-    except Incident.DoesNotExist:
-        return Response({"error": "Incident not found"}, status=404)
-
-    serializer = IncidentImageSerializer(data=request.data)
-
-    if serializer.is_valid():
-        serializer.save(incident=incident)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 
@@ -254,7 +251,38 @@ driver_detail = detail_view(Driver, DriverSerializer)
 get_vehicles = list_create(Vehicle, VehicleSerializer)
 vehicle_detail = detail_view(Vehicle, VehicleSerializer)
 
-get_tours = list_create(Tour, TourSerializer)
+@api_view(['GET', 'POST'])
+def get_tours(request):
+    if request.method == 'GET':
+        objs = Tour.objects.all()
+        serializer = TourSerializer(objs, many=True)
+        return Response(serializer.data)
+
+    if request.method == 'POST':
+        print("=" * 50)
+        print("CREATING TOUR")
+        print("Request data:", request.data)
+        
+        serializer = TourSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                tour = serializer.save()
+                print("✓ Tour created successfully:", tour.id)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print("✗ Error saving tour:", str(e))
+                print("Error type:", type(e).__name__)
+                import traceback
+                traceback.print_exc()
+                return Response(
+                    {'error': f'Error saving tour: {str(e)}'}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        else:
+            print("✗ Validation errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 tour_detail = detail_view(Tour, TourSerializer)
 
 get_invoices = list_create(Invoice, InvoiceSerializer)
@@ -429,3 +457,36 @@ def agent_detail(request, pk):
             {'message': f'Agent {email} deleted successfully'},
             status=status.HTTP_204_NO_CONTENT
         )
+
+
+@api_view(['GET'])
+def get_tour_global_stats_api(request):
+    from core.services.dashboard_service import DashboardService
+    stats = DashboardService().get_tour_global_stats()
+    return Response(stats)
+
+def  shipment_history(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+
+        history= ShipmentHistory.objects.filter(shipment=shipment).order_by('-created_at')
+        history_data = [{
+            'status': record.status,
+            'date': record.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'location': record.location if hasattr(record, 'location') else None,
+            'driver': f"{record.driver.first_name} {record.driver.last_name}" if record.driver else None,
+            'message': record.message if hasattr(record, 'message') else None,
+            'created_at': record.created_at,
+        } for record in history]
+        return JsonResponse({
+            'success': True,
+            'expedition_id': shipment_id,
+            'history': history_data
+        })
+    except Shipment.DoesNotExist:   
+        return JsonResponse({
+            'error':'non trouve'
+            },status=404)
+    
+
+

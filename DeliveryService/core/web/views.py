@@ -8,6 +8,7 @@ from django.template import TemplateDoesNotExist
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as django_login
+from django.db.models import Q  # Ajouté pour la recherche avancée
 
 from core.models.models import *
 
@@ -93,7 +94,13 @@ def list_clients(request):
 			},
 		)
 
-	clients = Client.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	clients = Client.objects.all()
+	if search_query:
+		clients = clients.filter(
+			Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+		)
+
 	page_obj = Paginator(clients, 10).get_page(request.GET.get("page"))
 	return render(request, "table/client/client.html", {"page_obj": page_obj})
 
@@ -118,7 +125,12 @@ def list_drivers(request):
 			},
 		)
 
-	drivers = Driver.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	drivers = Driver.objects.all()
+	if search_query:
+		drivers = drivers.filter(
+			Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+		)
 	page_obj = Paginator(drivers, 10).get_page(request.GET.get("page"))
 	return render(request, "table/driver/driver.html", {"page_obj": page_obj})
 def list_destinations(request):
@@ -141,9 +153,19 @@ def list_destinations(request):
 			},
 		)
 
-	destinations = Destination.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	destinations = Destination.objects.all()
+	if search_query:
+		destinations = destinations.filter(
+			Q(city__icontains=search_query) |
+			Q(country__icontains=search_query) |
+			Q(zone__icontains=search_query)
+		)
+
+	destinations = destinations.order_by("id")
 	page_obj = Paginator(destinations, 10).get_page(request.GET.get("page"))
 	return render(request, "table/destinations/destinations.html", {"page_obj": page_obj})
+
 
 def list_vehicles(request):
 	try:
@@ -164,8 +186,15 @@ def list_vehicles(request):
 				),
 			},
 		)
-
-	vehicles = Vehicle.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	vehicles = Vehicle.objects.all()
+	if search_query:
+		vehicles = vehicles.filter(
+			Q(plate_number__icontains=search_query) |
+			Q(model__icontains=search_query) |
+			Q(brand__icontains=search_query) |
+			Q(status__icontains=search_query)
+		)
 	page_obj = Paginator(vehicles, 10).get_page(request.GET.get("page"))
 	return render(request, "table/vehicule/vehicule.html", {"page_obj": page_obj})
 
@@ -188,8 +217,14 @@ def list_tarifications(request):
 				),
 			},
 		)
-
-	pricing= pricing.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	pricing= pricing.objects.all()
+	if search_query:
+		pricing = pricing.filter(
+			Q(zone__icontains=search_query) |
+			Q(weight_range__icontains=search_query) |
+			Q(price__icontains=search_query)
+		)
 	page_obj = Paginator(pricing, 10).get_page(request.GET.get("page"))
 	return render(request, "table/tarification/tarifications.html", {"page_obj": page_obj})
 
@@ -212,8 +247,12 @@ def list_service_types(request):
 				),
 			},
 		)
-
-	service_types = ServiceType.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	service_types = ServiceType.objects.all()
+	if search_query:
+		service_types = service_types.filter(
+			Q(label__icontains=search_query)
+		)
 	page_obj = Paginator(service_types, 10).get_page(request.GET.get("page"))
 	return render(request, "table/service-type/servicestype.html", {"page_obj": page_obj})
 
@@ -240,7 +279,13 @@ def list_incidents(request):
 			},
 		)
 
-	incidents = Incident.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	incidents = Incident.objects.all()
+	if search_query:
+		incidents = incidents.filter(
+			Q(description__icontains=search_query) |
+			Q(status__icontains=search_query)
+		)
 	page_obj = Paginator(incidents, 10).get_page(request.GET.get("page"))
 	return render(request, "incident/incident.html", {"page_obj": page_obj})
 
@@ -248,34 +293,41 @@ def statistics_view(request):
 	
 	return render(request, "incident/statistics.html")
 def expedition_view(request):
-	try:
-		Shipment= apps.get_model("core", "Shipment")
-	except LookupError as e:
-		raise Http404("Shipment model not found (check core/models/models.py).") from e
-	db_table = Shipment._meta.db_table
-	if db_table not in connection.introspection.table_names():
-		page_obj = Paginator([], 10).get_page(request.GET.get("page"))
-		return render(
-			request,
-			"expedition/expedition.html",
-			{
-				"page_obj": page_obj,
-				"db_warning": (
-					f"Missing DB table '{db_table}'. Run makemigrations + migrate."
-				),
-			},
-		)
-
-	Shipments = Shipment.objects.all().order_by("id")
-	page_obj = Paginator(Shipments, 10).get_page(request.GET.get("page"))
-	return render(request, "expedition/expedition.html", {"page_obj": page_obj})
+    try:
+        Shipment = apps.get_model("core", "Shipment")
+    except LookupError as e:
+        raise Http404("Shipment model not found (check core/models/models.py).") from e
+    db_table = Shipment._meta.db_table
+    if db_table not in connection.introspection.table_names():
+        page_obj = Paginator([], 10).get_page(request.GET.get("page"))
+        return render(
+            request,
+            "expedition/expedition.html",
+            {
+                "page_obj": page_obj,
+                "db_warning": (
+                    f"Missing DB table '{db_table}'. Run makemigrations + migrate."
+                ),
+            },
+        )
+    search_query = request.GET.get('search', '').strip()
+    Shipments = Shipment.objects.all()
+    if search_query:
+        q_obj = (
+            Q(tracking_number__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            Q(client__first_name__icontains=search_query) |
+            Q(client__last_name__icontains=search_query) 
+        )
+        if search_query.isdigit():
+            q_obj |= Q(id=int(search_query))
+        Shipments = Shipments.filter(q_obj)
+    Shipments = Shipments.order_by('id')
+    page_obj = Paginator(Shipments, 10).get_page(request.GET.get("page"))
+    return render(request, "expedition/expedition.html", {"page_obj": page_obj})
 
 def suivi_view(request):
-	"""
-	Suivi expédition:
-	- /suivi/?id=123  => détail Shipment id=123
-	- /suivi/?q=ABC   => recherche (id ou champs texte si existants)
-	"""
+	
 	try:
 		Shipment = apps.get_model("core", "Shipment")
 	except LookupError as e:
@@ -291,9 +343,9 @@ def suivi_view(request):
 				"db_warning": f"Missing DB table '{db_table}'. Run makemigrations + migrate.",
 			},
 		)
-
+	
 	shipment_id = request.GET.get("id")
-	q = (request.GET.get("q") or "").strip()
+	search_query = request.GET.get("search", "").strip()
 
 	shipment = None
 	qs = Shipment.objects.all().order_by("-id")
@@ -305,28 +357,19 @@ def suivi_view(request):
 		except (ValueError, Shipment.DoesNotExist):
 			raise Http404("Shipment not found.")
 
-	# Recherche simple (fallback: id uniquement, sinon champs optionnels si présents)
-	elif q:
-		if q.isdigit():
-			qs = qs.filter(id=int(q))
-		else:
-			# on tente quelques champs courants si ils existent dans le modèle
-			fields = {f.name for f in Shipment._meta.get_fields() if getattr(f, "concrete", False)}
-			filters = {}
-			for name in ("tracking_code", "reference", "status"):
-				if name in fields:
-					filters[f"{name}__icontains"] = q
-			if filters:
-				from django.db.models import Q
-				cond = Q()
-				for k, v in filters.items():
-					cond |= Q(**{k: v})
-				qs = qs.filter(cond)
-			else:
-				qs = qs.none()
+	# Recherche par tracking_number ou nom/prénom client
+	elif search_query:
+		q_obj = (
+			Q(tracking_number__icontains=search_query) |
+			Q(client__first_name__icontains=search_query) |
+			Q(client__last_name__icontains=search_query)
+		)
+		if search_query.isdigit():
+			q_obj |= Q(id=int(search_query))
+		qs = qs.filter(q_obj)
 
 	page_obj = Paginator(qs, 10).get_page(request.GET.get("page"))
-	ctx = {"shipment": shipment, "page_obj": page_obj, "q": q}
+	ctx = {"shipment": shipment, "page_obj": page_obj, "search_query": search_query}
 
 	# Template dédié si dispo, sinon fallback vers la liste existante
 	try:
@@ -335,27 +378,39 @@ def suivi_view(request):
 		return render(request, "expedition/expedition.html", ctx)
 
 def tournee_view(request):
-	try:
-		Tour= apps.get_model("core", "Tour")
-	except LookupError as e:
-		raise Http404("Tournee model not found (check core/models/models.py).") from e
-	db_table = Tour._meta.db_table
-	if db_table not in connection.introspection.table_names():
-		page_obj = Paginator([], 10).get_page(request.GET.get("page"))
-		return render(
-			request,
-			"expedition/tourne.html",
-			{
-				"page_obj": page_obj,
-				"db_warning": (
-					f"Missing DB table '{db_table}'. Run makemigrations + migrate."
-				),
-			},
-		)
-
-	Tournees = Tour.objects.all().order_by("id")
-	page_obj = Paginator(Tournees, 10).get_page(request.GET.get("page"))
-	return render(request, "expedition/tourne.html", {"page_obj": page_obj})
+    try:
+        Tour = apps.get_model("core", "Tour")
+    except LookupError as e:
+        raise Http404("Tournee model not found (check core/models/models.py).") from e
+    db_table = Tour._meta.db_table
+    if db_table not in connection.introspection.table_names():
+        page_obj = Paginator([], 10).get_page(request.GET.get("page"))
+        return render(
+            request,
+            "expedition/tourne.html",
+            {
+                "page_obj": page_obj,
+                "db_warning": (
+                    f"Missing DB table '{db_table}'. Run makemigrations + migrate."
+                ),
+            },
+        )
+    search_query = request.GET.get('search', '').strip()
+    Tournees = Tour.objects.all()
+    if search_query:
+        q_obj = (
+            Q(tour_date__icontains=search_query) |
+            Q(status__icontains=search_query) |
+            Q(driver__first_name__icontains=search_query) |
+            Q(driver__last_name__icontains=search_query) |
+            Q(vehicle__plate_number__icontains=search_query)
+        )
+        if search_query.isdigit():
+            q_obj |= Q(id=int(search_query))
+        Tournees = Tournees.filter(q_obj)
+    Tournees = Tournees.order_by('-id')
+    page_obj = Paginator(Tournees, 10).get_page(request.GET.get("page"))
+    return render(request, "expedition/tourne.html", {"page_obj": page_obj})
 
 def reclamation_view(request):
 	try:
@@ -375,8 +430,13 @@ def reclamation_view(request):
 				),
 			},
 		)
-
-	Complaints = Complaint.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	Complaints = Complaint.objects.all()
+	if search_query:
+		Complaints = Complaints.filter(
+			Q(description__icontains=search_query) |
+			Q(status__icontains=search_query)
+		)
 	page_obj = Paginator(Complaints, 10).get_page(request.GET.get("page"))
 	return render(request, "reclamation/reclamation.html", {"page_obj": page_obj})
 
@@ -398,8 +458,14 @@ def facturation_view(request):
 				),
 			},
 		)
-
-	Invoices = Invoice.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	Invoices = Invoice.objects.all()
+	if search_query:
+		Invoices = Invoices.filter(
+			Q(client__first_name__icontains=search_query) |
+			Q(client__last_name__icontains=search_query) |
+			Q(status__icontains=search_query)
+		)
 	page_obj = Paginator(Invoices, 10).get_page(request.GET.get("page"))
 	return render(request, "facture/facture.html", {"page_obj": page_obj})
 
@@ -421,14 +487,23 @@ def paiement_view(request):
 				),
 			},
 		)
-
-	Payments = Payment.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	Payments = Payment.objects.all()
+	if search_query:
+		q_obj = (
+			Q(invoice__client__first_name__icontains=search_query) |
+			Q(invoice__client__last_name__icontains=search_query) |
+			Q(payment_method__icontains=search_query)
+		)
+		if search_query.isdigit():
+			q_obj |= Q(id=int(search_query))
+		Payments = Payments.filter(q_obj)
 	page_obj = Paginator(Payments, 10).get_page(request.GET.get("page"))
 	return render(request, "facture/paiements.html", {"page_obj": page_obj})
 
 def list_agents(request):
 	try:
-		profile = apps.get_model("core", "Profile")
+		Profile = apps.get_model("core", "Profile")
 	except LookupError as e:
 		raise Http404("Agent model not found (check core/models/models.py).") from e
 
@@ -445,70 +520,13 @@ def list_agents(request):
 				),
 			},
 		)
-
-	agents = Profile.objects.all().order_by("id")
+	search_query = request.GET.get('search', '').strip()
+	agents = Profile.objects.all()
+	if search_query:
+		agents = agents.filter(
+			Q(user__first_name__icontains=search_query) |
+			Q(user__last_name__icontains=search_query) |
+			Q(role__icontains=search_query)
+		)
 	page_obj = Paginator(agents, 10).get_page(request.GET.get("page"))
 	return render(request, "table/agent/agent.html", {"page_obj": page_obj})
-
-
-def commercial_dashboard_view(request):
-	"""
-	Commercial Dashboard View
-	Displays commercial analysis including:
-	- Top clients by volume
-	- Top clients by value
-	- Top destinations
-	- Monthly volume and revenue analysis
-	"""
-	from core.services.dashboard_service import DashboardService
-	import json
-	
-	dashboard_service = DashboardService()
-	
-	# Get commercial analysis data
-	top_clients_volume = dashboard_service.identify_top_client_volume()
-	top_clients_value = dashboard_service.identify_top_client_value()
-	top_destinations = dashboard_service.top_requested_destinations()
-	monthly_analysis = dashboard_service.get_full_year_commercial_analysis()
-	
-	context = {
-		'top_clients_volume': top_clients_volume or [],
-		'top_clients_value': top_clients_value or [],
-		'top_destinations': top_destinations or [],
-		'monthly_analysis': json.dumps(monthly_analysis or []),
-	}
-	
-	return render(request, 'dashboard/commercialDashboards.html', context)
-
-
-def operational_dashboard_view(request):
-	"""
-	Operational Dashboard View
-	Displays operational analysis including:
-	- Tour operational metrics
-	- Geographic incident analysis
-	- Tour success rates by zone
-	- Top drivers performance
-	- Peak activity periods
-	"""
-	from core.services.dashboard_service import DashboardService
-	import json
-	
-	dashboard_service = DashboardService()
-	
-	# Get operational analysis data
-	tour_analysis = dashboard_service.get_tour_operational_analysis()
-	incident_analysis = dashboard_service.get_geographic_incident_analysis()
-	tour_success_analysis = dashboard_service.get_tour_success_operational_analysis()
-	top_drivers = dashboard_service.get_top_drivers_analysis()
-	peak_periods = dashboard_service.get_peak_periods_logic()
-	
-	context = {
-		'tour_analysis': json.dumps(tour_analysis or []),
-		'incident_analysis': json.dumps(incident_analysis or {}),
-		'tour_success_analysis': json.dumps(tour_success_analysis or {}),
-		'top_drivers': top_drivers or [],
-		'peak_periods': json.dumps(peak_periods or {}),
-	}
-	
-	return render(request, 'dashboard/operationalDashboards.html', context)

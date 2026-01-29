@@ -4,6 +4,65 @@ document.addEventListener("DOMContentLoaded", function()  {
     const closeBtn = document.getElementById("closeModal");
     const form = document.getElementById("addReclamationForm");
 
+    function loadDropdownOptions() {
+        console.log("Loading dropdown options...");
+        
+        // Load drivers
+        fetch("/api/shipments/")
+            .then(response => {
+                console.log("Shipments response status:", response.status);
+                return response.json();
+            })
+            .then(shipments => {
+                console.log("Shipments loaded:", shipments);
+                const shipmentSelect = document.getElementById("shipment");
+                if (!shipmentSelect) {
+                    console.error("Shipment select element not found!");
+                    return;
+                }
+                shipments.forEach(shipment => {
+                    const option = document.createElement("option");
+                    option.value = shipment.id;
+                    const clientName = shipment.client_name || `Client #${shipment.client}`;
+                    const destName = shipment.destination_name || `Destination #${shipment.destination}`;
+                    option.textContent = `${shipment.tracking_number} - ${clientName} to ${destName}`;
+                    shipmentSelect.appendChild(option);
+                });
+                console.log("Shipments added to select:", shipmentSelect.options.length);
+            })
+            .catch(error => console.error("Error loading shipments:", error));
+        console.log("Loading clients...");
+        
+        fetch("/api/clients/")
+            .then(response => {
+                console.log("Clients response status:", response.status);
+                return response.json();
+            })
+            .then(clients => {
+                console.log("Clients loaded:", clients);
+                const clientSelect = document.getElementById("client");
+                if (!clientSelect) {
+                    console.error("Client select element not found!");
+                    return;
+                }
+                clientSelect.innerHTML = '<option value="">-- Sélectionner un client --</option>';
+                clients.forEach(client => {
+                    const option = document.createElement("option");
+                    option.value = client.id;
+                    option.textContent = `${client.first_name} ${client.last_name}${client.email ? ' (' + client.email + ')' : ''}`;
+                    clientSelect.appendChild(option);
+                });
+                
+                console.log("Clients added to select:", clientSelect.options.length);
+            })
+            .catch(error => {
+                console.error("Error loading clients:", error);
+                alert("Impossible de charger la liste des clients");
+            });
+    }
+
+    loadDropdownOptions();
+    
     if (!openBtn || !modal || !closeBtn || !form) {
         return; // required elements missing on page
     }
@@ -81,4 +140,51 @@ function getCSRFToken() {
         }
     }
     return cookieValue;
+}
+
+function updateReclamationStatus(selectElement) {
+    const reclamationId = selectElement.getAttribute('data-reclamation-id');
+    const newStatus = selectElement.value;
+    
+    console.log('Updating reclamation:', reclamationId, 'to status:', newStatus);
+    
+    // First, get the current complaint data
+    fetch(`/api/complaints/${reclamationId}/`)
+        .then(response => response.json())
+        .then(currentData => {
+            // Update with PUT (requires all fields)
+            const updatedData = {
+                ...currentData,
+                status: newStatus
+            };
+            
+            return fetch(`/api/complaints/${reclamationId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify(updatedData)
+            });
+        })
+    .then(async response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Error data:', errorData);
+            const message = JSON.stringify(errorData, null, 2);
+            throw new Error(message || 'Failed to update status');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Status updated successfully:', data);
+        alert('Statut mis à jour avec succès!');
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+        alert('Erreur lors de la mise à jour du statut:\n' + error.message);
+        // Revert to previous value on error
+        location.reload();
+    });
 }

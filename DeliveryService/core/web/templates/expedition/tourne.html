@@ -23,9 +23,9 @@
     .modal-content {
         background: #fff;
         width: 90%;
-        max-width: 500px;
+        max-width: 800px;
         margin: 5% auto;
-        padding: 25px;
+        padding: 30px;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
@@ -44,7 +44,7 @@
     }
 
     .modal-content h3 {
-        margin: 0 0 20px 0;
+        margin: 0 0 25px 0;
         color: #333;
         font-size: 22px;
         clear: both;
@@ -53,13 +53,37 @@
     .modal-content form {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+    }
+
+    /* Section du formulaire */
+    .form-section {
+        margin-bottom: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-row-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .form-row-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
     }
 
     .modal-content label {
         font-weight: 600;
         color: #374151;
         font-size: 14px;
+        margin-bottom: 6px;
     }
 
     .modal-content input,
@@ -80,8 +104,59 @@
         background: #fff;
     }
 
-    .modal-content button[type="submit"] {
+    .form-divider {
+        margin: 20px 0;
+        border: none;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .shipments-section {
+        margin-top: 20px;
+    }
+
+    .shipments-section label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .shipments-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px;
+        background: #f9fafb;
+    }
+
+    .selection-count {
         margin-top: 10px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .modal-content button[type="submit"] {
+        margin-top: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-row-3,
+        .form-row-2 {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -155,11 +230,11 @@
                 </select>
             </div>
             <div class="right">
-                <button type="submit" class="btn danger">
+                <button type="button" class="btn danger" id="deleteTourneeBtn">
                     <i class="fa-solid fa-trash"></i>
                 </button>
 
-                <button type="button" class="btn light">
+                <button type="button" class="btn light" id="printTourneeBtn">
                     <i class="fa-solid fa-print"></i> Print
                 </button>
 
@@ -176,7 +251,12 @@
             <thead>
                 
                 <tr>
-                    <th>Tournee ID</th>
+                    <th>
+                        <label>
+                            <input type="checkbox" id="selectAll">
+                            ID
+                        </label>
+                    </th>
                     <th>Date</th>
                     <th>Driver</th>
                     <th>Vehicule</th>
@@ -186,13 +266,14 @@
                     <th>Carb</th>
                     <th>Incd</th>
                     <th style="width: 90px;">Status</th>
+                    <th style="width: 120px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for tour in page_obj %}
                 <tr>
                     <!-- Put the ID in its cell and keep the checkbox in the same cell -->
-                    <td class="id-col"><input type="checkbox" value="{{ tour.id }}"><span class="row-id">{{ tour.id }}</span></td>
+                    <td class="id-col"><input type="checkbox" value="{{ tour.id }}"><span class="row-id">TR-{{ tour.id }}</span></td>
                     <td>{{ tour.tour_date }}</td>
                     <td>{{ tour.driver }}</td>
                     <td>{{ tour.vehicle }}</td>
@@ -202,14 +283,20 @@
                     <td>{{ tour.carb }}</td>
                     <td>{{ tour.incd }}</td>
                     <td class="status">
+                        <select onchange="updateTourStatus({{ tour.id }}, this.value)" 
+                                style="padding: 3px 6px;width: 80px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer;">
+                            <option value="disponible" {% if tour.status == "disponible" %}selected{% endif %}>Planifiée</option>
+                            <option value="en_mission" {% if tour.status == "en_mission" %}selected{% endif %}>En mission</option>
+                            <option value="offline" {% if tour.status == "offline" %}selected{% endif %}>Terminée</option>
+                        </select>
+                    </td>
+                    <td>
                         {% if tour.status == "disponible" %}
-                            <span class="status-badge status-disponible">{{ tour.status }}</span>
-                        {% elif tour.status == "offline" %}
-                            <span class="status-badge status-offline">{{ tour.status }}</span>
-                        {% elif tour.status == "en_mission" %}
-                            <span class="status-badge status-en_mission">{{ tour.status }}</span>
+                        <button class="btn primary" style="padding: 5px 10px; font-size: 12px;" onclick="openAssignModal({{ tour.id }})">
+                            <i class="bi bi-plus-circle"></i> Assigner
+                        </button>
                         {% else %}
-                            <span class="status-badge">{{ tour.status }}</span>
+                        <span style="color: #6b7280; font-size: 12px;">-</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -280,7 +367,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="10">
+                    <td colspan="11">
                         <div class="pagination-footer">
                             <div class="pagination">
                                 {% if page_obj.has_previous %}
@@ -323,43 +410,104 @@
 </section>
 
 <div id="AddTourneeModal" class="modal">
-
     <div class="modal-content">
-
         <span class="close-btn" id="closeModal">&times;</span>
-
-        <h3>Add New Tournee</h3>
+        
+        <h3>Créer une Nouvelle Tournée</h3>
 
         <form id="addTourneeForm">
             {% csrf_token %}
-            <label for="tour_date">Date:</label>
-            <input type="date" id="tour_date" name="tour_date" required>
-            <label for="driver">Driver:</label>
-            <input type="text" id="driver" name="driver" required>
-            <label for="vehicle">Vehicle:</label>
-            <input type="text" id="vehicle" name="vehicle" required>
-            <label for="nb_exp">Number of Expeditions:</label>
-            <input type="number" id="nb_exp" name="nb_exp" required>
-            <label for="distance">Distance (km):</label>
-            <input type="number" id="distance" name="distance" required>
-            <label for="duration">Duration (hours):</label>
-            <input type="number" id="duration" name="duration" required>
-            <label for="carb">Carburant (L):</label>
-            <input type="number" id="carb" name="carb" required>
-            <label for="incd">Incidents:</label>
-            <input type="number" id="incd" name="incd" required>
-            <label for="status">Status:</label>
-            <select id="status" name="status" required>
-                <option value="disponible">disponible</option>
-                <option value="en_mission">en_mission</option>
-                <option value="offline">offline</option>
-            </select>
             
+            <!-- Section 1: Informations principales -->
+            <div class="form-section">
+                <div class="form-row form-row-3">
+                    <div class="form-field">
+                        <label for="tour_date">Date de la tournée</label>
+                        <input type="date" id="tour_date" name="tour_date" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="driver">Chauffeur</label>
+                        <select id="driver" name="driver" required>
+                            <option value="">-- Selectionner --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="vehicle">Véhicule</label>
+                        <select id="vehicle" name="vehicle" required>
+                            <option value="">-- Selectionner --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 2: Estimations -->
+            <div class="form-section">
+                <div class="form-row form-row-2">
+                    <div class="form-field">
+                        <label for="distance">Distance estimée (km)</label>
+                        <input type="number" id="distance" name="distance" step="0.01" min="0" value="0" placeholder="150">
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="duration">Durée estimée (heures)</label>
+                        <input type="number" id="duration" name="duration" step="0.1" min="0" value="0" placeholder="4.5">
+                    </div>
+                </div>
+            </div>
 
+            <hr class="form-divider">
+            
+            <!-- Section 3: Expéditions -->
+            <div class="shipments-section">
+                <label>
+                    <i class="bi bi-box-seam"></i>
+                    Expéditions à assigner
+                </label>
+                
+                <input type="text" 
+                        id="searchShipmentsInModal" 
+                        class="search-input"
+                        placeholder="Rechercher par numéro, client, destination...">
+                
+                <div id="shipmentsListInModal" class="shipments-list">
+                    <p style="text-align: center; color: #6b7280;">
+                        Chargement des expéditions disponibles...
+                    </p>
+                </div>
+                
+                <div class="selection-count">
+                    <span id="selectedShipmentsCount">0 expédition(s) sélectionnée(s)</span>
+                </div>
+            </div>
 
-            <button type="submit" class="btn primary">Save Expedition</button>
+            <button type="submit" class="btn primary">Créer la Tournée</button>
         </form>
+    </div>
+</div>
 
+<!-- Modal pour assigner des expéditions -->
+<div id="AssignShipmentsModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <span class="close-btn" id="closeAssignModal">&times;</span>
+        <h3>Assigner des expéditions à la tournée</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <input type="text" id="searchShipments" placeholder="Rechercher par numéro de suivi, client..." 
+                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+        </div>
+        
+        <div id="availableShipmentsList" style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px;">
+            <p style="text-align: center; color: #6b7280;">Chargement des expéditions disponibles...</p>
+        </div>
+        
+        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="selectedCount" style="color: #6b7280; font-size: 14px;">0 expédition(s) sélectionnée(s)</span>
+            <button id="confirmAssignBtn" class="btn primary" disabled>
+                <i class="bi bi-check-circle"></i> Assigner les expéditions
+            </button>
+        </div>
     </div>
 </div>
 

@@ -6,6 +6,61 @@ document.addEventListener("DOMContentLoaded", () => {
     const photoInput = document.getElementById("photo");
     const previewBox = document.getElementById("photoPreview");
 
+    function loadDropdownOptions() {
+        console.log("Loading dropdown options...");
+        
+        // Load drivers
+        fetch("/api/shipments/")
+            .then(response => {
+                console.log("Shipments response status:", response.status);
+                return response.json();
+            })
+            .then(shipments => {
+                console.log("Shipments loaded:", shipments);
+                const shipmentSelect = document.getElementById("shipment");
+                if (!shipmentSelect) {
+                    console.error("Shipment select element not found!");
+                    return;
+                }
+                shipments.forEach(shipment => {
+                    const option = document.createElement("option");
+                    option.value = shipment.id;
+                    const clientName = shipment.client_name || `Client #${shipment.client}`;
+                    const destName = shipment.destination_name || `Destination #${shipment.destination}`;
+                    option.textContent = `${shipment.tracking_number} - ${clientName} to ${destName}`;
+                    shipmentSelect.appendChild(option);
+                });
+                console.log("Shipments added to select:", shipmentSelect.options.length);
+            })
+            .catch(error => console.error("Error loading shipments:", error));
+        
+        fetch("/api/tours/")
+            .then(response => {
+                console.log("Tours response status:", response.status);
+                return response.json();
+            })
+            .then(tours => {
+                console.log("Tours loaded:", tours);
+                const tourSelect = document.getElementById("tour");
+                if (!tourSelect) {
+                    console.error("Tour select element not found!");
+                    return;
+                }
+                tours.forEach(tour => {
+                    const option = document.createElement("option");
+                    option.value = tour.id;
+                    option.textContent = `TR-${tour.id}  - ${tour.driver.first_name} ${tour.driver.last_name} (${tour.tour_date})`;
+                    tourSelect.appendChild(option);
+                });
+                console.log("Tours added to select:", tourSelect.options.length);
+            })
+            .catch(error => console.error("Error loading tours:", error));
+    }
+
+    
+    loadDropdownOptions();
+
+
     if (!openBtn || !modal || !closeBtn || !form) {
         return;
     }
@@ -75,18 +130,24 @@ document.addEventListener("DOMContentLoaded", () => {
             body: formData,
         })
             .then(async (response) => {
+                console.log("Response status:", response.status);
+                console.log("Response ok:", response.ok);
+                
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    console.log("Error data:", errorData);
+                    
                     const message =
                         errorData.detail ||
                         errorData.error ||
-                        JSON.stringify(errorData) ||
-                        "Failed to create incident";
+                        Object.keys(errorData).length > 0 ? JSON.stringify(errorData) : null ||
+                        `Erreur HTTP ${response.status}: ${response.statusText}`;
                     throw new Error(message);
                 }
                 return response.json();
             })
             .then(() => {
+                alert("Incident créé avec succès!");
                 window.location.reload();
             })
             .catch((error) => {
@@ -107,4 +168,56 @@ function getCSRFToken() {
         }
     }
     return cookieValue;
+}
+function updateIncidentStatus(selectElement) {
+    const incidentId = selectElement.getAttribute("data-incident-id");
+    const newStatus = selectElement.value;
+    const originalStatus = selectElement.getAttribute("data-original-status");
+
+    console.log(`Updating incident ${incidentId} from ${originalStatus} to status: ${newStatus}`);
+    if(!confirm(`changer le statut de l'incident INC-${incidentId} à "${newStatus}" ?`)) {
+        selectElement.value =selectElement.getAttribute("data-original-status");
+        return;
+    }
+    if(!selectElement.getAttribute("data-original-status")) {
+        selectElement.value = originalStatus;
+        return;
+    }
+    fetch(`/api/incidents/${incidentId}/`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ status: newStatus }),
+        
+    })
+    .then(data => {
+        console.log("Incident status updated successfully:", data);
+        const card = selectElement.closest(".incident-card");
+        const badge = card.querySelector(".badge");
+        if (badge) {
+            badge.classList.remove('new', 'ongoing', 'resolved');
+            badge.classList.add(newStatus);
+            if (newStatus === 'new') {
+                badge.textContent = 'New';
+            } else if (newStatus === 'ongoing') {
+                badge.textContent = 'Ongoing';  
+            }else if (newStatus === 'resolved') {
+                badge.textContent = 'Resolved';  
+            }
+        }
+
+        selectElement.setAttribute("data-original-status", newStatus);
+        alert("Statut de l'incident mis à jour avec succès.");
+    })
+    .catch(error => {
+        console.error("Error updating incident status:", error);
+        alert("Erreur lors de la mise à jour du statut de l'incident.");
+        const originalStatus = selectElement.getAttribute("data-original-status");
+        if (originalStatus) {
+            selectElement.value = originalStatus;
+        }
+    }
+    )
 }
