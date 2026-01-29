@@ -7,6 +7,37 @@ document.addEventListener("DOMContentLoaded", function () {
     const deleteBtn = document.querySelector('.btn.danger');
     const printBtn = document.querySelector('.btn.light');
 
+    function loadDropdownOptions() {
+        console.log("Loading clients...");
+        fetch("/api/clients/")
+            .then(response => {
+                console.log("Clients response status:", response.status);
+                return response.json();
+            })
+            .then(clients => {
+                console.log("Clients loaded:", clients);
+                const clientSelect = document.getElementById("client");
+                if (!clientSelect) {
+                    console.error("Client select element not found!");
+                    return;
+                }
+                clientSelect.innerHTML = '<option value="">-- Sélectionner un client --</option>';
+                clients.forEach(client => {
+                    const option = document.createElement("option");
+                    option.value = client.id;
+                    option.textContent = `${client.first_name} ${client.last_name}${client.email ? ' (' + client.email + ')' : ''}`;
+                    clientSelect.appendChild(option);
+                });
+                
+                console.log("Clients added to select:", clientSelect.options.length);
+            })
+            .catch(error => {
+                console.error("Error loading clients:", error);
+                alert("Impossible de charger la liste des clients");
+            });
+    }
+    loadDropdownOptions();
+
     // -----------------------
     // Open & Close Modal
     // -----------------------

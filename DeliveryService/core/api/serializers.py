@@ -51,6 +51,7 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 
 class TourSerializer(serializers.ModelSerializer):
+    driver = DriverSerializer()
     class Meta:
         model = Tour
         fields = '__all__'

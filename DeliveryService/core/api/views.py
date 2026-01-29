@@ -1,13 +1,14 @@
-from django.contrib.auth.models import User  # CORRECT
+from django.contrib.auth.models import User  
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .permissions import IsAdmin
 from core.services.client_service import add_price_to_sold
 from core.services.payment_service import pay
+from django.http import JsonResponse
 
 from core.models.models import (
-    Client, Shipment, Driver, Vehicle,
+    Client, Shipment, Driver, ShipmentHistory, Vehicle,
     Destination, ServiceType, 
     Tour, Invoice, Payment, Incident, Complaint,Profile
 )
@@ -463,3 +464,29 @@ def get_tour_global_stats_api(request):
     from core.services.dashboard_service import DashboardService
     stats = DashboardService().get_tour_global_stats()
     return Response(stats)
+
+def  shipment_history(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+
+        history= ShipmentHistory.objects.filter(shipment=shipment).order_by('-created_at')
+        history_data = [{
+            'status': record.status,
+            'date': record.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'location': record.location if hasattr(record, 'location') else None,
+            'driver': f"{record.driver.first_name} {record.driver.last_name}" if record.driver else None,
+            'message': record.message if hasattr(record, 'message') else None,
+            'created_at': record.created_at,
+        } for record in history]
+        return JsonResponse({
+            'success': True,
+            'expedition_id': shipment_id,
+            'history': history_data
+        })
+    except Shipment.DoesNotExist:   
+        return JsonResponse({
+            'error':'non trouve'
+            },status=404)
+    
+
+

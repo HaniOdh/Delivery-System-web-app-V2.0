@@ -6,6 +6,61 @@ document.addEventListener("DOMContentLoaded", () => {
     const photoInput = document.getElementById("photo");
     const previewBox = document.getElementById("photoPreview");
 
+    function loadDropdownOptions() {
+        console.log("Loading dropdown options...");
+        
+        // Load drivers
+        fetch("/api/shipments/")
+            .then(response => {
+                console.log("Shipments response status:", response.status);
+                return response.json();
+            })
+            .then(shipments => {
+                console.log("Shipments loaded:", shipments);
+                const shipmentSelect = document.getElementById("shipment");
+                if (!shipmentSelect) {
+                    console.error("Shipment select element not found!");
+                    return;
+                }
+                shipments.forEach(shipment => {
+                    const option = document.createElement("option");
+                    option.value = shipment.id;
+                    const clientName = shipment.client_name || `Client #${shipment.client}`;
+                    const destName = shipment.destination_name || `Destination #${shipment.destination}`;
+                    option.textContent = `${shipment.tracking_number} - ${clientName} to ${destName}`;
+                    shipmentSelect.appendChild(option);
+                });
+                console.log("Shipments added to select:", shipmentSelect.options.length);
+            })
+            .catch(error => console.error("Error loading shipments:", error));
+        
+        fetch("/api/tours/")
+            .then(response => {
+                console.log("Tours response status:", response.status);
+                return response.json();
+            })
+            .then(tours => {
+                console.log("Tours loaded:", tours);
+                const tourSelect = document.getElementById("tour");
+                if (!tourSelect) {
+                    console.error("Tour select element not found!");
+                    return;
+                }
+                tours.forEach(tour => {
+                    const option = document.createElement("option");
+                    option.value = tour.id;
+                    option.textContent = `TR-${tour.id}  - ${tour.driver.first_name} ${tour.driver.last_name} (${tour.tour_date})`;
+                    tourSelect.appendChild(option);
+                });
+                console.log("Tours added to select:", tourSelect.options.length);
+            })
+            .catch(error => console.error("Error loading tours:", error));
+    }
+
+    
+    loadDropdownOptions();
+
+
     if (!openBtn || !modal || !closeBtn || !form) {
         return;
     }

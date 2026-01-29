@@ -23,9 +23,9 @@
     .modal-content {
         background: #fff;
         width: 90%;
-        max-width: 500px;
+        max-width: 800px;
         margin: 5% auto;
-        padding: 25px;
+        padding: 30px;
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
@@ -44,7 +44,7 @@
     }
 
     .modal-content h3 {
-        margin: 0 0 20px 0;
+        margin: 0 0 25px 0;
         color: #333;
         font-size: 22px;
         clear: both;
@@ -53,13 +53,37 @@
     .modal-content form {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+    }
+
+    /* Section du formulaire */
+    .form-section {
+        margin-bottom: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-row-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .form-row-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
     }
 
     .modal-content label {
         font-weight: 600;
         color: #374151;
         font-size: 14px;
+        margin-bottom: 6px;
     }
 
     .modal-content input,
@@ -80,8 +104,59 @@
         background: #fff;
     }
 
-    .modal-content button[type="submit"] {
+    .form-divider {
+        margin: 20px 0;
+        border: none;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .shipments-section {
+        margin-top: 20px;
+    }
+
+    .shipments-section label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .shipments-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px;
+        background: #f9fafb;
+    }
+
+    .selection-count {
         margin-top: 10px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .modal-content button[type="submit"] {
+        margin-top: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-row-3,
+        .form-row-2 {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -335,71 +410,80 @@
 </section>
 
 <div id="AddTourneeModal" class="modal">
-
-    <div class="modal-content" style="max-width: 800px;">
-
+    <div class="modal-content">
         <span class="close-btn" id="closeModal">&times;</span>
-
+        
         <h3>Créer une Nouvelle Tournée</h3>
 
         <form id="addTourneeForm">
             {% csrf_token %}
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <label for="tour_date">Date de la tournée:</label>
-                    <input type="date" id="tour_date" name="tour_date" required>
-                </div>
-                
-                <div>
-                    <label for="driver">Chauffeur:</label>
-                    <select id="driver" name="driver" required>
-                        <option value="">-- Sélectionner --</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="vehicle">Véhicule:</label>
-                    <select id="vehicle" name="vehicle" required>
-                        <option value="">-- Sélectionner --</option>
-                    </select>
+            <!-- Section 1: Informations principales -->
+            <div class="form-section">
+                <div class="form-row form-row-3">
+                    <div class="form-field">
+                        <label for="tour_date">Date de la tournée</label>
+                        <input type="date" id="tour_date" name="tour_date" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="driver">Chauffeur</label>
+                        <select id="driver" name="driver" required>
+                            <option value="">-- Selectionner --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="vehicle">Véhicule</label>
+                        <select id="vehicle" name="vehicle" required>
+                            <option value="">-- Selectionner --</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <label for="distance">Distance estimée (km):</label>
-                    <input type="number" id="distance" name="distance" step="0.01" min="0" value="0">
+            <!-- Section 2: Estimations -->
+            <div class="form-section">
+                <div class="form-row form-row-2">
+                    <div class="form-field">
+                        <label for="distance">Distance estimée (km)</label>
+                        <input type="number" id="distance" name="distance" step="0.01" min="0" value="0" placeholder="150">
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="duration">Durée estimée (heures)</label>
+                        <input type="number" id="duration" name="duration" step="0.1" min="0" value="0" placeholder="4.5">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="form-divider">
+            
+            <!-- Section 3: Expéditions -->
+            <div class="shipments-section">
+                <label>
+                    <i class="bi bi-box-seam"></i>
+                    Expéditions à assigner
+                </label>
+                
+                <input type="text" 
+                        id="searchShipmentsInModal" 
+                        class="search-input"
+                        placeholder="Rechercher par numéro, client, destination...">
+                
+                <div id="shipmentsListInModal" class="shipments-list">
+                    <p style="text-align: center; color: #6b7280;">
+                        Chargement des expéditions disponibles...
+                    </p>
                 </div>
                 
-                <div>
-                    <label for="duration">Durée estimée (heures):</label>
-                    <input type="number" id="duration" name="duration" step="0.1" min="0" value="0">
+                <div class="selection-count">
+                    <span id="selectedShipmentsCount">0 expédition(s) sélectionnée(s)</span>
                 </div>
             </div>
 
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
-            
-            <label style="font-weight: 600; color: #374151; margin-bottom: 10px; display: block;">
-                <i class="bi bi-box-seam"></i> Expéditions à assigner:
-            </label>
-            
-            <div style="margin-bottom: 10px;">
-                <input type="text" id="searchShipmentsInModal" placeholder="Rechercher par numéro, client, destination..." 
-                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-            </div>
-            
-            <div id="shipmentsListInModal" style="max-height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #f9fafb;">
-                <p style="text-align: center; color: #6b7280;">Chargement des expéditions disponibles...</p>
-            </div>
-            
-            <div style="margin-top: 10px; font-size: 13px; color: #6b7280;">
-                <span id="selectedShipmentsCount">0 expédition(s) sélectionnée(s)</span>
-            </div>
-
-            <button type="submit" class="btn primary">Save Tournee</button>
+            <button type="submit" class="btn primary">Créer la Tournée</button>
         </form>
-
     </div>
 </div>
 

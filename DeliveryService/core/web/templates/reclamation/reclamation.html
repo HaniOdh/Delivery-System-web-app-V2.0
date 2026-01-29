@@ -219,12 +219,18 @@
                 <option value="ongoing">On going</option>
                 <option value="resolved">Resolved</option>
             </select>
-
-            <label for="client">Client (ID)</label>
-            <input type="number" id="client" name="client" min="1" placeholder="ID client" required>
-
-            <label for="shipment">Colis/Shipment (ID)</label>
-            <input type="number" id="shipment" name="shipment" min="1" placeholder="ID shipment" required>
+            <div class="form-field">
+                <label for="client">Client (ID)</label>
+                <select id="client" name="client" required>
+                    <option value="">--Selectionner--</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="shipment">Colis/Shipment (ID)</label>
+                <select id="shipment" name="shipment" required>
+                    <option value="">--Selectionner--</option>
+                </select>
+            </div>
 
             <button type="submit" class="btn primary">Save Reclamation</button>
         </form>

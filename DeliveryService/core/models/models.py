@@ -185,4 +185,14 @@ class Profile(models.Model):
     def is_admin(self):
         return self.role == 'admin'
 
+class ShipmentHistory(models.Model):
+    shipment=models.ForeignKey('Shipment', on_delete=models.CASCADE, related_name='history')
+    status=models.CharField(max_length=100)
+    location=models.CharField(max_length=255,blank=True,null=True)
+    driver=models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
+    message=models.TextField(blank=True,null=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import (
     agent_detail, create_agent, get_clients, client_detail,
     get_destinations, destination_detail,
@@ -12,6 +13,8 @@ from .views import (
     get_incidents, incident_detail,
     get_complaints, complaint_detail,
     get_expidition_by_param,get_payments_by_param,get_invoices_by_param,
+    shipment_history,
+
 )
 
 urlpatterns = [
@@ -41,6 +44,7 @@ urlpatterns = [
     path('shipments/', get_shipments),
     path('shipments/<int:pk>/', shipment_detail, name='shipment-detail'),
     path('shipments/filter/', get_expidition_by_param),
+    path('shipments/<int:shipment_id>/history/', shipment_history, name='shipment-history'),
 
     path('payments/', get_payments),
     path('payments/<int:pk>/', payment_detail),
@@ -53,6 +57,8 @@ urlpatterns = [
     path('complaints/<int:pk>/', complaint_detail),
 
     path('agents/', create_agent, name='create_agent'), 
-    path('agents/<int:pk>/', agent_detail, name='agent_detail'),  #
+    path('agents/<int:pk>/', agent_detail, name='agent_detail'),  
+
+    
 ]
 
