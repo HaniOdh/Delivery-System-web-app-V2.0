@@ -79,7 +79,7 @@
                                             </td>
                                             <td class="client-cell">{{ client.name }}</td>
                                             <td class="value-cell">
-                                                <span class="value-badge">{% if client.total_value %}${{ client.total_value|floatformat:2 }}{% else %}$0.00{% endif %}</span>
+                                                <span class="value-badge">{% if client.total_value %}{{ client.total_value|floatformat:2 }}DA{% else %}0.00 DA{% endif %}</span>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -165,26 +165,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         {
                             label: 'Shipment Volume',
                             data: volumeData,
-                            borderColor: '#0d6efd',
-                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                            borderColor: '#0845FF',
+                            backgroundColor: '#0845FF33',
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
-                            pointBackgroundColor: '#0d6efd',
+                            pointBackgroundColor: '#0845FF',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 5,
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Revenue ($)',
+                            label: 'Revenue (DA)',
                             data: revenueData,
-                            borderColor: '#0b7a4d',
+                            borderColor: '#1FA628',
                             backgroundColor: 'transparent',
                             borderWidth: 3,
                             fill: false,
                             tension: 0.4,
-                            pointBackgroundColor: '#0b7a4d',
+                            pointBackgroundColor: '#1FA628',
                             pointBorderColor: '#fff',
                             pointBorderWidth: 2,
                             pointRadius: 5,
@@ -232,13 +232,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             title: {
                                 display: true,
                                 text: 'Shipment Volume',
-                                color: '#0d6efd',
+                                color: '#0845FF',
                                 font: {
                                     weight: 'bold'
                                 }
                             },
                             ticks: {
-                                color: '#0d6efd',
+                                color: '#0845FF',
                                 font: {
                                     size: 12
                                 }
@@ -254,14 +254,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             position: 'right',
                             title: {
                                 display: true,
-                                text: 'Revenue ($)',
-                                color: '#0b7a4d',
+                                text: 'Revenue (DA)',
+                                color: '#1FA628',
                                 font: {
                                     weight: 'bold'
                                 }
                             },
                             ticks: {
-                                color: '#0b7a4d',
+                                color: '#1FA628',
                                 font: {
                                     size: 12
                                 }

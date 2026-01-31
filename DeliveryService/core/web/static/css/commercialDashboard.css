@@ -127,7 +127,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    background-color: #0845FF;
     color: white;
     font-weight: 700;
     font-size: 13px;
@@ -149,7 +149,7 @@
     display: inline-block;
     padding: 6px 12px;
     background-color: #e7f3ff;
-    color: #0066cc;
+    color: #0845FF;
     border-radius: 20px;
     font-weight: 600;
     font-size: 13px;
@@ -337,8 +337,8 @@
 .destination-badge {
     display: inline-block;
     padding: 6px 12px;
-    background-color: #fff3cd;
-    color: #974706;
+    background-color: #e7f3ff;
+    color: #0845FF;
     border-radius: 20px;
     font-weight: 600;
     font-size: 13px;
