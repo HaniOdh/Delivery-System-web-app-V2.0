@@ -34,9 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = {
             first_name: form.first_name.value.trim(),
             last_name: form.last_name.value.trim(),
-            username: form.username.value.trim(),
-            email: form.email.value.trim(),
-            phone: form.phone.value.trim(), // matches your HTML field name
+            email: form.username.value.trim(),
+            phone: form.phone.value.trim(),
+            password: form.password.value.trim(), // matches your HTML field name
         };
 
         // Send POST request to API
