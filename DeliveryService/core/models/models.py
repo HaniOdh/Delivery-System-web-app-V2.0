@@ -2,13 +2,14 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from django.core.validators import MinValueValidator
 
 
 # Create your models here.
 
 
 class Client(models.Model):
-    solld = models.FloatField(default=0)
+    solld = models.FloatField(default=0, validators=[MinValueValidator(0)])
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
