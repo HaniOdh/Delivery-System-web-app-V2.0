@@ -12,10 +12,10 @@
 <div class="dashboard-management">
     <div class="dashboard-header">
         <h3><b>Dashboards</b></h3>
-        <p class="text-muted">Analyse detaillées commercial et operationnel.</p>
+        <p class="text-muted">Analyse détaillées commercial et operationnel.</p>
     </div>
-    <select name="dashboard" class="dashboard-select" onchange="if (this.value) { window.location.href =this.value; }">
-        <option value="{% url 'commercial_dashboard'%}" >Commercial</option>
+    <select name="dashboard" class="dashboard-select" onchange="if (this.value) { window.location.href = this.value; }">
+        <option value="{% url 'commercial_dashboard'%}">Commercial</option>
         <option value="{% url 'operational_dashboard'%}" selected>Operationnel</option>
     </select>
 
@@ -23,14 +23,15 @@
         <div class="statistics-overview">
             
             <div class="statistic-cards">
+                <!-- Tour Analysis Card -->
                 <div class="statistic-card wide">
                     <div class="card-header-stat">
-                        <h4>Tour Analysis</h4>
+                        <h4>Zone Performance Analysis</h4>
                     </div>
                     <div class="tour-analysis-wrapper">
-                        {% if tour_analysis %}
-                            <div class="chart-container tour-chart">
-                                <canvas id="tourAnalysisChart"></canvas>
+                        {% if tour_success_analysis %}
+                            <div class="chart-container" style="height: 350px;">
+                                <canvas id="zonePerformanceChart"></canvas>
                             </div>
                         {% else %}
                             <div class="no-data">Aucune donnée disponible</div>
@@ -38,7 +39,8 @@
                     </div>
                 </div>
                 
-                <div class="statistic-card ">
+                <!-- Geographic Incident Analysis Card -->
+                <div class="statistic-card">
                     <div class="card-header-stat">
                         <h4>Geographic Incident Analysis</h4>
                     </div>
@@ -53,6 +55,23 @@
                     </div>
                 </div>
                 
+                <!-- Tour Monthly Evolution Card -->
+                <div class="statistic-card full-width">
+                    <div class="card-header-stat">
+                        <h4>Tour Monthly Evolution</h4>
+                    </div>
+                    <div class="tour-analysis-wrapper">
+                        {% if tour_analysis %}
+                            <div class="chart-container tour-chart">
+                                <canvas id="tourAnalysisChart"></canvas>
+                            </div>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Top Drivers Performance Card -->
                 <div class="statistic-card full-width">
                     <div class="card-header-stat">
                         <h4>Top Drivers Performance</h4>
@@ -87,55 +106,54 @@
                     </div>
                 </div>
                 
+                <!-- Peak Activity Periods Card -->
                 <div class="statistic-card full-width">
                     <div class="card-header-stat">
                         <h4>Peak Activity Periods</h4>
                     </div>
 
                     <div class="peak-dashboard">
+                        <!-- Average -->
+                        <div class="peak-average">
+                            <span class="label">Average Daily Shipments</span>
+                            <span class="value">
+                                {{ peak_periods.average_threshold|default:0 }}
+                            </span>
+                        </div>
 
-    <!-- Average -->
-    <div class="peak-average">
-        <span class="label">Average Daily Shipments</span>
-        <span class="value">
-            {{ peak_data.average_threshold|default:0 }}
-        </span>
-    </div>
+                        <!-- Chart -->
+                        <div class="peak-chart">
+                            <canvas id="peakPeriodsChart"></canvas>
+                        </div>
 
-    <!-- Chart -->
-    <div class="peak-chart">
-        <canvas id="peakPeriodsChart"></canvas>
-    </div>
-
-    <!-- Table -->
-    <div class="peak-table-wrapper">
-        <table class="peak-table">
-            <thead>
-                <tr>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Days</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if peak_data.periods %}
-                    {% for period in peak_data.periods %}
-                    <tr>
-                        <td>{{ period.start }}</td>
-                        <td>{{ period.end }}</td>
-                        <td>{{ period.days_count }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="3" class="no-data">No peak periods detected</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-
-</div>
+                        <!-- Table -->
+                        <div class="peak-table-wrapper">
+                            <table class="peak-table">
+                                <thead>
+                                    <tr>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if peak_periods.periods %}
+                                        {% for period in peak_periods.periods %}
+                                        <tr>
+                                            <td>{{ period.start }}</td>
+                                            <td>{{ period.end }}</td>
+                                            <td>{{ period.days_count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="3" class="no-data">No peak periods detected</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -143,25 +161,27 @@
 
     </section>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // Geographic Incident Analysis Chart
+    // ===== GEOGRAPHIC INCIDENT ANALYSIS CHART =====
     const geoCtx = document.getElementById('geographicIncidentChart');
     if (geoCtx) {
-        const incidentData = {{ incident_analysis|safe }};
+        const incidentData = {{ incident_analysis|default:"{}"|safe }};
         
         if (incidentData && Object.keys(incidentData).length > 0) {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const colors = ['#DC3545', '#FFC107', '#17A2B8', '#28A745', '#007BFF', '#6F42C1', '#E83E8C', '#FD7E14', '#20C997', '#6C757D', '#343A40', '#6B8E23'];
             
+            // Restructure data for Chart.js
             const datasets = {};
             for (let month = 1; month <= 12; month++) {
                 const monthData = incidentData[month] || [];
                 monthData.forEach(zone => {
                     if (!datasets[zone.zone]) {
-                        datasets[zone.zone] = [];
+                        datasets[zone.zone] = Array(12).fill(0);
                     }
                     datasets[zone.zone][month - 1] = zone.incidents;
                 });
@@ -210,47 +230,120 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Zone Success Rates Display
-    const tourSuccessData = {{ tour_success_analysis|safe }};
+    // ===== ZONE PERFORMANCE CHART (Grouped Bar Chart) =====
+    const tourSuccessData = {{ tour_success_analysis|default:"{}"|safe }};
     if (tourSuccessData && Object.keys(tourSuccessData).length > 0) {
-        const zoneMetrics = document.getElementById('zoneMetrics');
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
-        // Get the latest month with data
-        let latestMonth = null;
-        for (let m = 12; m >= 1; m--) {
-            if (tourSuccessData[m] && tourSuccessData[m].length > 0) {
-                latestMonth = m;
-                break;
+        const zoneChartCtx = document.getElementById('zonePerformanceChart');
+        if (zoneChartCtx) {
+            // Get the latest month with data
+            let latestMonth = null;
+            for (let m = 12; m >= 1; m--) {
+                if (tourSuccessData[m] && tourSuccessData[m].length > 0) {
+                    latestMonth = m;
+                    break;
+                }
             }
-        }
-        
-        if (latestMonth) {
-            const monthZones = tourSuccessData[latestMonth];
-            zoneMetrics.innerHTML = monthZones.map(zone => `
-                <div class="metric-card">
-                    <div class="metric-title">${zone.zone_name}</div>
-                    <div class="metric-stat">
-                        <span class="stat-label">Success:</span>
-                        <span class="stat-value" style="color: #28A745;">${zone.success_rate}%</span>
-                    </div>
-                    <div class="metric-stat">
-                        <span class="stat-label">Failures:</span>
-                        <span class="stat-value" style="color: #DC3545;">${zone.failure_rate}%</span>
-                    </div>
-                    <div class="metric-stat">
-                        <span class="stat-label">Delays:</span>
-                        <span class="stat-value" style="color: #FFC107;">${zone.delay_rate}%</span>
-                    </div>
-                </div>
-            `).join('');
+            
+            if (latestMonth && tourSuccessData[latestMonth].length > 0) {
+                const monthZones = tourSuccessData[latestMonth];
+                
+                // Extract zone names and rates
+                const zoneNames = monthZones.map(z => z.zone_name);
+                const successRates = monthZones.map(z => z.success_rate);
+                const failureRates = monthZones.map(z => z.failure_rate);
+                const delayRates = monthZones.map(z => z.delay_rate);
+                
+                new Chart(zoneChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: zoneNames,
+                        datasets: [
+                            {
+                                label: 'Success Rate',
+                                data: successRates,
+                                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                                borderColor: 'rgb(40, 167, 69)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Failure Rate',
+                                data: failureRates,
+                                backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                                borderColor: 'rgb(220, 53, 69)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Delay Rate',
+                                data: delayRates,
+                                backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                                borderColor: 'rgb(255, 193, 7)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 13,
+                                        weight: '600'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Percentage (%)',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Zones',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
     
-    // Tour Analysis Chart
+    // ===== TOUR ANALYSIS CHART (Monthly Evolution) =====
     const tourCtx = document.getElementById('tourAnalysisChart');
     if (tourCtx) {
-        const tourData = {{ tour_analysis|safe }};
+        const tourData = {{ tour_analysis|default:"[]"|safe }};
         
         if (tourData && tourData.length > 0) {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -386,7 +479,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const peakPeriods = {{ peak_data.periods|default:"[]"|safe }};
+    // ===== PEAK PERIODS CHART =====
+    const peakPeriods = {{ peak_periods|default:"{}"|safe }}.periods || [];
 
     const labels = peakPeriods.length
         ? peakPeriods.map(p => `${p.start} → ${p.end}`)
