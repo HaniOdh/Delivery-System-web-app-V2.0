@@ -1,0 +1,434 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block title %}Dashboards - Delivery System{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/operational_dashboard.css' %}">
+<style>
+    .main-content { background-color: #fff !important; }
+</style>
+
+<div class="dashboard-management">
+    <div class="dashboard-header">
+        <h3><b>Dashboards</b></h3>
+        <p class="text-muted">Analyse detaillées commercial et operationnel.</p>
+    </div>
+    <select name="dashboard" class="dashboard-select" onchange="if (this.value) { window.location.href =this.value; }">
+        <option value="{% url 'commercial_dashboard'%}" >Commercial</option>
+        <option value="{% url 'operational_dashboard'%}" selected>Operationnel</option>
+    </select>
+
+    <section class="dashboard-content">
+        <div class="statistics-overview">
+            
+            <div class="statistic-cards">
+                <div class="statistic-card wide">
+                    <div class="card-header-stat">
+                        <h4>Tour Analysis</h4>
+                    </div>
+                    <div class="tour-analysis-wrapper">
+                        {% if tour_analysis %}
+                            <div class="chart-container tour-chart">
+                                <canvas id="tourAnalysisChart"></canvas>
+                            </div>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="statistic-card ">
+                    <div class="card-header-stat">
+                        <h4>Geographic Incident Analysis</h4>
+                    </div>
+                    <div class="geographic-analysis-wrapper">
+                        {% if incident_analysis %}
+                            <div class="chart-container geographic-chart">
+                                <canvas id="geographicIncidentChart"></canvas>
+                            </div>
+                        {% else %}
+                            <div class="no-data">Aucune donnée disponible</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="statistic-card full-width">
+                    <div class="card-header-stat">
+                        <h4>Top Drivers Performance</h4>
+                    </div>
+                    <div class="drivers-table-wrapper">
+                        <table class="drivers-table">
+                            <thead>
+                                <tr>
+                                    <th>Driver</th>
+                                    <th>Success Rate</th>
+                                    <th>Punctuality</th>
+                                    <th>Efficiency</th>
+                                    <th>Tours</th>
+                                </tr>
+                            </thead>
+                            <tbody id="driversTableBody">
+                                {% for driver in top_drivers %}
+                                <tr>
+                                    <td>{{ driver.name }}</td>
+                                    <td><span class="badge badge-success">{{ driver.success_rate }}%</span></td>
+                                    <td><span class="badge badge-info">{{ driver.punctuality_rate }}%</span></td>
+                                    <td><span class="badge badge-primary">{{ driver.efficiency_score }}</span></td>
+                                    <td>{{ driver.total_tours }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Aucune donnée disponible</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="statistic-card full-width">
+                    <div class="card-header-stat">
+                        <h4>Peak Activity Periods</h4>
+                    </div>
+
+                    <div class="peak-dashboard">
+
+    <!-- Average -->
+    <div class="peak-average">
+        <span class="label">Average Daily Shipments</span>
+        <span class="value">
+            {{ peak_data.average_threshold|default:0 }}
+        </span>
+    </div>
+
+    <!-- Chart -->
+    <div class="peak-chart">
+        <canvas id="peakPeriodsChart"></canvas>
+    </div>
+
+    <!-- Table -->
+    <div class="peak-table-wrapper">
+        <table class="peak-table">
+            <thead>
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Days</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if peak_data.periods %}
+                    {% for period in peak_data.periods %}
+                    <tr>
+                        <td>{{ period.start }}</td>
+                        <td>{{ period.end }}</td>
+                        <td>{{ period.days_count }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="no-data">No peak periods detected</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Geographic Incident Analysis Chart
+    const geoCtx = document.getElementById('geographicIncidentChart');
+    if (geoCtx) {
+        const incidentData = {{ incident_analysis|safe }};
+        
+        if (incidentData && Object.keys(incidentData).length > 0) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const colors = ['#DC3545', '#FFC107', '#17A2B8', '#28A745', '#007BFF', '#6F42C1', '#E83E8C', '#FD7E14', '#20C997', '#6C757D', '#343A40', '#6B8E23'];
+            
+            const datasets = {};
+            for (let month = 1; month <= 12; month++) {
+                const monthData = incidentData[month] || [];
+                monthData.forEach(zone => {
+                    if (!datasets[zone.zone]) {
+                        datasets[zone.zone] = [];
+                    }
+                    datasets[zone.zone][month - 1] = zone.incidents;
+                });
+            }
+            
+            const chartDatasets = Object.keys(datasets).map((zone, idx) => ({
+                label: zone,
+                data: datasets[zone],
+                borderColor: colors[idx % colors.length],
+                backgroundColor: colors[idx % colors.length] + '20',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }));
+            
+            new Chart(geoCtx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: chartDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Incidents Count'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Zone Success Rates Display
+    const tourSuccessData = {{ tour_success_analysis|safe }};
+    if (tourSuccessData && Object.keys(tourSuccessData).length > 0) {
+        const zoneMetrics = document.getElementById('zoneMetrics');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        // Get the latest month with data
+        let latestMonth = null;
+        for (let m = 12; m >= 1; m--) {
+            if (tourSuccessData[m] && tourSuccessData[m].length > 0) {
+                latestMonth = m;
+                break;
+            }
+        }
+        
+        if (latestMonth) {
+            const monthZones = tourSuccessData[latestMonth];
+            zoneMetrics.innerHTML = monthZones.map(zone => `
+                <div class="metric-card">
+                    <div class="metric-title">${zone.zone_name}</div>
+                    <div class="metric-stat">
+                        <span class="stat-label">Success:</span>
+                        <span class="stat-value" style="color: #28A745;">${zone.success_rate}%</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-label">Failures:</span>
+                        <span class="stat-value" style="color: #DC3545;">${zone.failure_rate}%</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-label">Delays:</span>
+                        <span class="stat-value" style="color: #FFC107;">${zone.delay_rate}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    // Tour Analysis Chart
+    const tourCtx = document.getElementById('tourAnalysisChart');
+    if (tourCtx) {
+        const tourData = {{ tour_analysis|safe }};
+        
+        if (tourData && tourData.length > 0) {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const tourCounts = tourData.map(m => m.total_tours);
+            const evolutionRates = tourData.map(m => m.tour_evolution_rate);
+            
+            new Chart(tourCtx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: [
+                        {
+                            label: 'Total Tours',
+                            data: tourCounts,
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#ff9800',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Evolution Rate (%)',
+                            data: evolutionRates,
+                            borderColor: '#00bcd4',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4,
+                            pointBackgroundColor: '#00bcd4',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Total Tours',
+                                color: '#ff9800',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#ff9800',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#e9ecef',
+                                drawBorder: false
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Evolution Rate (%)',
+                                color: '#00bcd4',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                color: '#00bcd4',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    const peakPeriods = {{ peak_data.periods|default:"[]"|safe }};
+
+    const labels = peakPeriods.length
+        ? peakPeriods.map(p => `${p.start} → ${p.end}`)
+        : ['No Data'];
+
+    const values = peakPeriods.length
+        ? peakPeriods.map(p => p.days_count)
+        : [0];
+
+    const peakCtx = document.getElementById('peakPeriodsChart');
+    if (peakCtx) {
+        new Chart(peakCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Peak Duration (Days)',
+                    data: values,
+                    backgroundColor: '#6f42c1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+});
+</script>
+
+{% endblock %}
