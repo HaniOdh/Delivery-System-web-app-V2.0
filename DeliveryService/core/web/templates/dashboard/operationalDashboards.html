@@ -23,10 +23,12 @@
         <div class="statistics-overview">
             
             <div class="statistic-cards">
-                <!-- Tour Analysis Card -->
+                <!-- Zone Performance Analysis Card -->
+                <!-- Based on incident tracking (new/resolved states) -->
                 <div class="statistic-card wide">
                     <div class="card-header-stat">
                         <h4>Zone Performance Analysis</h4>
+                        <small style="color: #666; font-weight: normal;">Success/Failure/Delay rates by zone</small>
                     </div>
                     <div class="tour-analysis-wrapper">
                         {% if tour_success_analysis %}
@@ -40,9 +42,11 @@
                 </div>
                 
                 <!-- Geographic Incident Analysis Card -->
+                <!-- Tracks incidents by zone and month (new/resolved incidents) -->
                 <div class="statistic-card">
                     <div class="card-header-stat">
                         <h4>Geographic Incident Analysis</h4>
+                        <small style="color: #666; font-weight: normal;">Incidents by zone and month</small>
                     </div>
                     <div class="geographic-analysis-wrapper">
                         {% if incident_analysis %}
@@ -167,11 +171,12 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // ===== GEOGRAPHIC INCIDENT ANALYSIS CHART =====
+    // Data source: Incident model filtered by status='new' or 'resolved', grouped by month and zone
     const geoCtx = document.getElementById('geographicIncidentChart');
     if (geoCtx) {
         const incidentData = {{ incident_analysis|default:"{}"|safe }};
         
-        if (incidentData && Object.keys(incidentData).length > 0) {
+        if (incidentData && Object.keys(incidentData).length > 0 && Object.values(incidentData).some(m => m.length > 0)) {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const colors = ['#DC3545', '#FFC107', '#17A2B8', '#28A745', '#007BFF', '#6F42C1', '#E83E8C', '#FD7E14', '#20C997', '#6C757D', '#343A40', '#6B8E23'];
             
@@ -231,27 +236,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ===== ZONE PERFORMANCE CHART (Grouped Bar Chart) =====
+    // Data source: Shipment aggregation with incident counts by zone and month
+    // Incident statuses tracked: 'new', 'resolved', 'on going'
     const tourSuccessData = {{ tour_success_analysis|default:"{}"|safe }};
-    if (tourSuccessData && Object.keys(tourSuccessData).length > 0) {
+    if (tourSuccessData && Object.keys(tourSuccessData).length > 0 && Object.values(tourSuccessData).some(m => m.length > 0)) {
         const zoneChartCtx = document.getElementById('zonePerformanceChart');
         if (zoneChartCtx) {
-            // Get the latest month with data
-            let latestMonth = null;
-            for (let m = 12; m >= 1; m--) {
+            // Aggregate all zones across all months
+            const zoneAggregates = {};
+            for (let m = 1; m <= 12; m++) {
                 if (tourSuccessData[m] && tourSuccessData[m].length > 0) {
-                    latestMonth = m;
-                    break;
+                    tourSuccessData[m].forEach(zone => {
+                        if (!zoneAggregates[zone.zone_name]) {
+                            zoneAggregates[zone.zone_name] = {
+                                total_deliveries: 0,
+                                success_rate: 0,
+                                failure_rate: 0,
+                                delay_rate: 0,
+                                count: 0
+                            };
+                        }
+                        // Average the rates across months
+                        zoneAggregates[zone.zone_name].total_deliveries += zone.total_deliveries;
+                        zoneAggregates[zone.zone_name].success_rate += zone.success_rate;
+                        zoneAggregates[zone.zone_name].failure_rate += zone.failure_rate;
+                        zoneAggregates[zone.zone_name].delay_rate += zone.delay_rate;
+                        zoneAggregates[zone.zone_name].count += 1;
+                    });
                 }
             }
             
-            if (latestMonth && tourSuccessData[latestMonth].length > 0) {
-                const monthZones = tourSuccessData[latestMonth];
+            if (Object.keys(zoneAggregates).length > 0) {
+                // Calculate averages and prepare chart data
+                const zoneNames = [];
+                const successRates = [];
+                const failureRates = [];
+                const delayRates = [];
                 
-                // Extract zone names and rates
-                const zoneNames = monthZones.map(z => z.zone_name);
-                const successRates = monthZones.map(z => z.success_rate);
-                const failureRates = monthZones.map(z => z.failure_rate);
-                const delayRates = monthZones.map(z => z.delay_rate);
+                Object.keys(zoneAggregates).forEach(zoneName => {
+                    const zone = zoneAggregates[zoneName];
+                    zoneNames.push(zoneName);
+                    successRates.push(zone.count > 0 ? zone.success_rate / zone.count : 0);
+                    failureRates.push(zone.count > 0 ? zone.failure_rate / zone.count : 0);
+                    delayRates.push(zone.count > 0 ? zone.delay_rate / zone.count : 0);
+                });
                 
                 new Chart(zoneChartCtx, {
                     type: 'bar',
@@ -302,7 +330,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 cornerRadius: 8,
                                 callbacks: {
                                     label: function(context) {
-                                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        label += context.parsed.y.toFixed(2) + '%';
+                                        
+                                        // Add incident status clarification
+                                        if (label.includes('Failure')) {
+                                            label += ' (new incidents)';
+                                        } else if (label.includes('Delay')) {
+                                            label += ' (ongoing incidents)';
+                                        }
+                                        return label;
                                     }
                                 }
                             }
@@ -341,11 +379,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ===== TOUR ANALYSIS CHART (Monthly Evolution) =====
+    // Data source: Tour model aggregated by month with evolution rate calculation
     const tourCtx = document.getElementById('tourAnalysisChart');
     if (tourCtx) {
         const tourData = {{ tour_analysis|default:"[]"|safe }};
         
-        if (tourData && tourData.length > 0) {
+        if (tourData && tourData.length > 0 && tourData.some(m => m.total_tours > 0)) {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const tourCounts = tourData.map(m => m.total_tours);
             const evolutionRates = tourData.map(m => m.tour_evolution_rate);

@@ -410,7 +410,18 @@ def tournee_view(request):
         Tournees = Tournees.filter(q_obj)
     Tournees = Tournees.order_by('-id')
     page_obj = Paginator(Tournees, 10).get_page(request.GET.get("page"))
-    return render(request, "expedition/tourne.html", {"page_obj": page_obj})
+    
+    # Calculate statistics
+    from django.db.models import Sum, Count
+    all_tours = Tour.objects.all()
+    stats = {
+        'tournees': all_tours.count(),
+        'distance': all_tours.aggregate(Sum('distance'))['distance__sum'] or 0,
+        'carburant': all_tours.aggregate(Sum('carb'))['carb__sum'] or 0,
+        'expeditions': all_tours.aggregate(Sum('nb_exp'))['nb_exp__sum'] or 0,
+    }
+    
+    return render(request, "expedition/tourne.html", {"page_obj": page_obj, "stats": stats})
 
 def reclamation_view(request):
 	try:

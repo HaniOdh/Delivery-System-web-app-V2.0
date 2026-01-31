@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import ExtractYear, ExtractMonth
-from core.models.models import Shipment, Tour, Client, Destination, Payment
+from core.models.models import Shipment, Tour, Client, Destination, Payment, Incident
 from datetime import datetime
 from django.db.models import Count
 from django.db.models.functions import TruncDate
@@ -195,27 +195,24 @@ class DashboardService:
     def get_geographic_incident_analysis(self, year=None):
         if year is None:
             year = datetime.now().year
-
-        # 1. Query for incidents (Failed or Delayed) grouped by month and zone
-        # Accessing zone through destination relationship
-        incident_stats = Shipment.objects.filter(
-            shipment_date__isnull=False,
-            shipment_date__year=year
+        # 1. Use Incident model to count incidents (new or resolved) grouped by month and zone
+        incident_stats = Incident.objects.filter(
+            incident_date__isnull=False,
+            incident_date__year=year
         ).filter(
-            Q(status='Failed') | Q(status='Delayed') # Only look for problems
+            Q(status='new') | Q(status='resolved')
         ).annotate(
-            month=ExtractMonth('shipment_date')
-        ).values('month', 'destination__zone').annotate(
+            month=ExtractMonth('incident_date')
+        ).values('month', 'shipment__destination__zone').annotate(
             incident_count=Count('id')
         ).order_by('month', '-incident_count')
 
-        # 2. Structure the data for the Dashboard
-        # { month_index: [ {zone: 'Algiers', incidents: 5}, {zone: 'Oran', incidents: 2} ] }
+        # Structure the data for the Dashboard
         report = {m: [] for m in range(1, 13)}
-        
         for entry in incident_stats:
+            zone = entry.get('shipment__destination__zone') or 'Unknown'
             report[entry['month']].append({
-                'zone': entry['destination__zone'],
+                'zone': zone,
                 'incidents': entry['incident_count']
             })
 
@@ -233,13 +230,16 @@ class DashboardService:
 
         # 1. Group by Month AND Zone
         # We calculate the total, success, failure, and delay for every zone every month
+        # We aggregate shipments and related incidents so incident statuses are used to derive
+        # success/failure/delay rates per zone.
         raw_stats = Shipment.objects.filter(shipment_date__isnull=False, shipment_date__year=year).annotate(
             month=ExtractMonth('shipment_date')
         ).values('month', 'destination__zone').annotate(
             total_count=Count('id'),
-            success_count=Count('id', filter=Q(status='Delivered')),
-            failed_count=Count('id', filter=Q(status='Failed')),
-            delayed_count=Count('id', filter=Q(status='Delayed'))
+            incident_total=Count('incident__id', distinct=True),
+            resolved_incidents=Count('incident__id', filter=Q(incident__status='resolved'), distinct=True),
+            new_incidents=Count('incident__id', filter=Q(incident__status='new'), distinct=True),
+            ongoing_incidents=Count('incident__id', filter=Q(incident__status='on going'), distinct=True),
         ).order_by('month', 'destination__zone')
 
         # 2. Structure the data and apply your formulas
@@ -248,13 +248,21 @@ class DashboardService:
         for entry in raw_stats:
             total = entry['total_count']
             if total > 0:
+                incident_total = entry.get('incident_total') or 0
+                new_inc = entry.get('new_incidents') or 0
+                ongoing_inc = entry.get('ongoing_incidents') or 0
+
+                success_rate = ((total - incident_total) / total) * 100 if total > 0 else 0
+                failure_rate = (new_inc / total) * 100 if total > 0 else 0
+                delay_rate = (ongoing_inc / total) * 100 if total > 0 else 0
+
                 zone_data = {
                     'zone_name': entry['destination__zone'],
                     'total_deliveries': total,
-                    'success_rate': round((entry['success_count'] / total) * 100, 2),
-                    'failure_rate': round((entry['failed_count'] / total) * 100, 2),
-                    'delay_rate': round((entry['delayed_count'] / total) * 100, 2),
-                    'incident_total': entry['failed_count'] + entry['delayed_count']
+                    'success_rate': round(success_rate, 2),
+                    'failure_rate': round(failure_rate, 2),
+                    'delay_rate': round(delay_rate, 2),
+                    'incident_total': incident_total
                 }
                 monthly_report[entry['month']].append(zone_data)
 

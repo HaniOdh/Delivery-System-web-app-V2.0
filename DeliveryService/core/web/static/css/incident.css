@@ -39,11 +39,11 @@
 
 .incident-select {
     margin-top: 20px;
-    padding: 10px 16px;
-    font-size: 14px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: #1f2937;
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: none;
+    background: #1a1a1a;
     color: white;
     width: auto;
     min-width: 130px;
