@@ -31,5 +31,7 @@ urlpatterns = [
     path("reclamation/", views.reclamation_view, name="reclamation_view"),
     path("facturation/", views.facturation_view, name="facturation_view"),
     path("facturation/paiements/", views.paiement_view, name="paiement_view"),
+    path("dashboard/commercial/", views.commercial_dashboard_view, name="commercial_dashboard"),
+    path("dashboard/operationnel/", views.operational_dashboard_view, name="operational_dashboard"),
 
 ]

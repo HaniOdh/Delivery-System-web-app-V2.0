@@ -1,0 +1,307 @@
+/* Operational Dashboard Styles */
+
+/* Dashboard Select Styling */
+.dashboard-select {
+    appearance: none;
+    padding: 8px 14px;
+    padding-right: 40px;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 40px;
+}
+
+.dashboard-select:hover {
+    background-color: #2a2a2a;
+}
+
+.dashboard-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    background-color: #2a2a2a;
+}
+
+.dashboard-select option {
+    background-color: #ffffff;
+    color: #1a1a1a;
+    padding: 8px;
+}
+
+/* Tour Analysis Chart Styles */
+.tour-analysis-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.tour-chart {
+    position: relative;
+    height: 300px;
+    margin-bottom: 10px;
+}
+
+/* Geographic Incident Analysis */
+.geographic-analysis-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.geographic-chart {
+    position: relative;
+    height: 300px;
+}
+
+/* Top Drivers Section */
+.drivers-table-wrapper {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 60px;
+}
+
+.drivers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.drivers-table thead {
+    background-color: #e9ecef;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.drivers-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+}
+
+.drivers-table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.drivers-table tbody tr:hover {
+    background-color: #fff;
+}
+
+.drivers-table .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.badge-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.badge-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-primary {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* No Data */
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+/* Statistic Cards */
+.statistic-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 60px;
+}
+
+.statistic-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.statistic-card.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Wider card modifier: span two columns where grid allows */
+.statistic-card.wide {
+    grid-column: span 2;
+}
+
+/* On small screens, fall back to single-column layout */
+@media (max-width: 768px) {
+    .statistic-card.wide {
+        grid-column: auto;
+    }
+}
+
+.card-header-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header-stat h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.icon-success {
+    background-color: #d4edda;
+    color: #28a745;
+}
+
+.statistic-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin: 10px 0;
+}
+
+/* Responsive Design for Charts */
+@media (max-width: 1200px) {
+    .statistic-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .tour-chart,
+    .geographic-chart {
+        height: 250px;
+    }
+    
+    .statistic-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .drivers-table {
+        font-size: 12px;
+    }
+    
+    .drivers-table th,
+    .drivers-table td {
+        padding: 8px;
+    }
+}
+/* Peak Activity Dashboard */
+
+.peak-dashboard {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    padding: 15px 5px;
+}
+
+.peak-average {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.peak-average .label {
+    display: block;
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.peak-average .value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #0845FF;
+}
+
+.peak-chart {
+    height: 220px;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.peak-table-wrapper {
+    grid-column: 1 / -1;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.peak-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.peak-table th {
+    text-align: left;
+    font-size: 13px;
+    color: #495057;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.peak-table td {
+    padding: 10px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.peak-table .no-data {
+    text-align: center;
+    color: #adb5bd;
+    font-style: italic;
+}
+.peak-table tbody tr:hover {
+    background-color: #f8f9fa;
+}

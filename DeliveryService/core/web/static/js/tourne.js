@@ -305,12 +305,12 @@ document.addEventListener("DOMContentLoaded", function () {
             // Collect form data
             const data = {
                 tour_date: tourDate,
-                driver: parseInt(driverValue),
-                vehicle: parseInt(vehicleValue),
+                driver_id: parseInt(driverValue),
+                vehicle_id: parseInt(vehicleValue),
                 distance: parseFloat(document.getElementById("distance").value) || 0,
                 duration: parseFloat(document.getElementById("duration").value) || 0,
+                carb: parseFloat(document.getElementById("carburant").value) || 0,
                 nb_exp: selectedShipmentIds.length,
-                carb: 0,
                 incd: 0,
                 status: "disponible"
             };
@@ -328,12 +328,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 body: JSON.stringify(data)
             })
             .then(async response => {
+                const responseData = await response.json();
+                console.log("Tour creation response:", response.status, responseData);
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    const message = errorData.detail || "Échec de création de la tournée";
-                    throw new Error(message);
+                    console.error("Full API error:", JSON.stringify(responseData, null, 2));
+                    const errorMsg = responseData.detail || responseData.non_field_errors?.[0] || JSON.stringify(responseData);
+                    throw new Error(errorMsg);
                 }
-                return response.json();
+                return responseData;
             })
             .then(createdTour => {
                 console.log("Tour created:", createdTour);
@@ -343,8 +345,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("Tournée créée avec succès!");
                     form.reset();
                     modal.style.display = "none";
-                    location.reload();
-                    return;
+                    setTimeout(() => location.reload(), 500);
+                    return null;
                 }
                 
                 // Update each shipment
@@ -370,6 +372,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 return Promise.all(updatePromises);
             })
             .then(responses => {
+                // Handle the case where we returned null (no shipments to assign)
+                if (responses === null) return;
+                
                 const allSuccessful = responses.every(r => r.ok);
                 
                 if (allSuccessful) {
@@ -397,12 +402,27 @@ let currentTourId = null;
 let availableShipments = [];
 
 function openAssignModal(tourId) {
-    currentTourId = tourId;
-    const modal = document.getElementById("AssignShipmentsModal");
-    modal.style.display = "block";
-    
-    // Load available shipments
-    loadAvailableShipments();
+    // First validate that we can assign expeditions to this tour
+    fetch(`/api/tours/${tourId}/`)
+        .then(response => response.json())
+        .then(tourData => {
+            // Only allow assignment if status is 'disponible'
+            if (tourData.status !== 'disponible') {
+                alert("Les expéditions peuvent uniquement être assignées lorsque le statut de la tournée est 'Planifiée'. Statut actuel: " + tourData.status);
+                return;
+            }
+            
+            currentTourId = tourId;
+            const modal = document.getElementById("AssignShipmentsModal");
+            modal.style.display = "block";
+            
+            // Load available shipments
+            loadAvailableShipments();
+        })
+        .catch(error => {
+            console.error("Error fetching tour data:", error);
+            alert("Erreur lors de la récupération des données de la tournée.");
+        });
 }
 
 function loadAvailableShipments() {
@@ -569,7 +589,21 @@ function updateTourStatus(tourId, newStatus) {
     fetch(`/api/tours/${tourId}/`)
         .then(response => response.json())
         .then(tourData => {
-            // Update with new status
+            // Prevent changing back to 'disponible' if tour status has been changed
+            if (newStatus === 'disponible' && tourData.status !== 'disponible') {
+                alert("Impossible de revenir au statut 'Planifiée'. Une fois la tournée lancée, le statut ne peut pas être modifié.");
+                // Revert the select dropdown to original value
+                location.reload();
+                return;
+            }
+            
+            // Extract driver_id from nested driver object if present
+            const driverId = tourData.driver?.id || tourData.driver_id;
+            const vehicleId = tourData.vehicle?.id || tourData.vehicle_id;
+            
+            console.log(`Extracted IDs - driver_id: ${driverId}, vehicle_id: ${vehicleId}`);
+            
+            // Update with new status and proper IDs
             return fetch(`/api/tours/${tourId}/`, {
                 method: "PUT",
                 headers: {
@@ -577,7 +611,14 @@ function updateTourStatus(tourId, newStatus) {
                     "X-CSRFToken": getCSRFToken()
                 },
                 body: JSON.stringify({
-                    ...tourData,
+                    tour_date: tourData.tour_date,
+                    driver_id: driverId,
+                    vehicle_id: vehicleId,
+                    distance: tourData.distance,
+                    duration: tourData.duration,
+                    nb_exp: tourData.nb_exp,
+                    carb: tourData.carb,
+                    incd: tourData.incd,
                     status: newStatus
                 })
             });
@@ -585,15 +626,17 @@ function updateTourStatus(tourId, newStatus) {
         .then(response => {
             if (response.ok) {
                 console.log(`Tour ${tourId} status updated successfully`);
-                // Optionally show a success message
-                // alert("Statut mis à jour!");
+                location.reload(); // Reload page to show updated status
             } else {
-                throw new Error("Failed to update tour status");
+                return response.json().then(errorData => {
+                    console.error("API error response:", errorData);
+                    throw new Error(JSON.stringify(errorData));
+                });
             }
         })
         .catch(error => {
             console.error("Error updating tour status:", error);
-            alert("Erreur lors de la mise à jour du statut");
+            alert("Erreur lors de la mise à jour du statut: " + error.message);
             location.reload(); // Reload to revert the select value
         });
 }

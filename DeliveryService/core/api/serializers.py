@@ -51,16 +51,65 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 
 class TourSerializer(serializers.ModelSerializer):
-    driver = DriverSerializer()
+    driver = DriverSerializer(read_only=True)
+    vehicle = VehicleSerializer(read_only=True)
+    driver_id = serializers.IntegerField(write_only=True, required=False)
+    vehicle_id = serializers.IntegerField(write_only=True, required=False)
+    
     class Meta:
         model = Tour
-        fields = '__all__'
+        fields = ['id', 'tour_date', 'distance', 'duration', 'status', 'driver', 'driver_id', 
+                  'vehicle', 'vehicle_id', 'nb_exp', 'carb', 'incd']
 
+    def to_internal_value(self, data):
+        # Log incoming data for debugging
+        print(f"TourSerializer.to_internal_value received: {data}")
+        
+        # Accept both 'driver' and 'driver_id', 'vehicle' and 'vehicle_id'
+        # Handle driver: can be an integer ID or a dict/object
+        if 'driver' in data and 'driver_id' not in data:
+            driver_val = data.pop('driver')
+            if isinstance(driver_val, dict):
+                data['driver_id'] = driver_val.get('id')
+            else:
+                data['driver_id'] = driver_val
+        
+        # Handle vehicle: can be an integer ID or a dict/object
+        if 'vehicle' in data and 'vehicle_id' not in data:
+            vehicle_val = data.pop('vehicle')
+            if isinstance(vehicle_val, dict):
+                data['vehicle_id'] = vehicle_val.get('id')
+            else:
+                data['vehicle_id'] = vehicle_val
+        
+        result = super().to_internal_value(data)
+        print(f"TourSerializer.to_internal_value returning: {result}")
+        return result
 
+    def create(self, validated_data):
+        # Extract driver_id and vehicle_id if provided
+        driver_id = validated_data.pop('driver_id', None)
+        vehicle_id = validated_data.pop('vehicle_id', None)
+        
+        if driver_id:
+            validated_data['driver_id'] = driver_id
+        if vehicle_id:
+            validated_data['vehicle_id'] = vehicle_id
+        
+        return super().create(validated_data)
     
     def update(self, instance, validated_data):
         old_status = instance.status
         new_status = validated_data.get("status", old_status)
+
+        # Handle driver_id and vehicle_id in updates
+        driver_id = validated_data.pop('driver_id', None)
+        vehicle_id = validated_data.pop('vehicle_id', None)
+        
+        if driver_id:
+            validated_data['driver_id'] = driver_id
+        if vehicle_id:
+            validated_data['vehicle_id'] = vehicle_id
 
         tour = super().update(instance, validated_data)
 
@@ -68,7 +117,7 @@ class TourSerializer(serializers.ModelSerializer):
         if old_status != new_status:
             tour.shipment_set.update(status=new_status)
 
-        return tour    
+        return tour
 
 
 class InvoiceSerializer(serializers.ModelSerializer):

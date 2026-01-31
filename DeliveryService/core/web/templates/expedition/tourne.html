@@ -285,7 +285,7 @@
                     <td class="status">
                         <select onchange="updateTourStatus({{ tour.id }}, this.value)" 
                                 style="padding: 3px 6px;width: 80px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer;">
-                            <option value="disponible" {% if tour.status == "disponible" %}selected{% endif %}>Planifiée</option>
+                            <option value="disponible" {% if tour.status == "disponible" %}selected{% endif %} {% if tour.status != "disponible" %}disabled{% endif %}>Planifiée</option>
                             <option value="en_mission" {% if tour.status == "en_mission" %}selected{% endif %}>En mission</option>
                             <option value="offline" {% if tour.status == "offline" %}selected{% endif %}>Terminée</option>
                         </select>
@@ -444,7 +444,7 @@
             
             <!-- Section 2: Estimations -->
             <div class="form-section">
-                <div class="form-row form-row-2">
+                <div class="form-row form-row-3">
                     <div class="form-field">
                         <label for="distance">Distance estimée (km)</label>
                         <input type="number" id="distance" name="distance" step="0.01" min="0" value="0" placeholder="150">
@@ -453,6 +453,11 @@
                     <div class="form-field">
                         <label for="duration">Durée estimée (heures)</label>
                         <input type="number" id="duration" name="duration" step="0.1" min="0" value="0" placeholder="4.5">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="carburant">Carburant estimé (L)</label>
+                        <input type="number" id="carburant" name="carburant" step="0.1" min="0" value="0" placeholder="25">
                     </div>
                 </div>
             </div>
