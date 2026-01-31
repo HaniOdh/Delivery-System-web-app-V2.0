@@ -530,3 +530,65 @@ def list_agents(request):
 		)
 	page_obj = Paginator(agents, 10).get_page(request.GET.get("page"))
 	return render(request, "table/agent/agent.html", {"page_obj": page_obj})
+
+def commercial_dashboard_view(request):
+	"""
+	Commercial Dashboard View
+	Displays commercial analysis including:
+	- Top clients by volume
+	- Top clients by value
+	- Top destinations
+	- Monthly volume and revenue analysis
+	"""
+	from core.services.dashboard_service import DashboardService
+	import json
+	
+	dashboard_service = DashboardService()
+	
+	# Get commercial analysis data
+	top_clients_volume = dashboard_service.identify_top_client_volume()
+	top_clients_value = dashboard_service.identify_top_client_value()
+	top_destinations = dashboard_service.top_requested_destinations()
+	monthly_analysis = dashboard_service.get_full_year_commercial_analysis()
+	
+	context = {
+		'top_clients_volume': top_clients_volume or [],
+		'top_clients_value': top_clients_value or [],
+		'top_destinations': top_destinations or [],
+		'monthly_analysis': json.dumps(monthly_analysis or []),
+	}
+	
+	return render(request, 'dashboard/commercialDashboards.html', context)
+
+
+def operational_dashboard_view(request):
+	"""
+	Operational Dashboard View
+	Displays operational analysis including:
+	- Tour operational metrics
+	- Geographic incident analysis
+	- Tour success rates by zone
+	- Top drivers performance
+	- Peak activity periods
+	"""
+	from core.services.dashboard_service import DashboardService
+	import json
+	
+	dashboard_service = DashboardService()
+	
+	# Get operational analysis data
+	tour_analysis = dashboard_service.get_tour_operational_analysis()
+	incident_analysis = dashboard_service.get_geographic_incident_analysis()
+	tour_success_analysis = dashboard_service.get_tour_success_operational_analysis()
+	top_drivers = dashboard_service.get_top_drivers_analysis()
+	peak_periods = dashboard_service.get_peak_periods_logic()
+	
+	context = {
+		'tour_analysis': json.dumps(tour_analysis or []),
+		'incident_analysis': json.dumps(incident_analysis or {}),
+		'tour_success_analysis': json.dumps(tour_success_analysis or {}),
+		'top_drivers': top_drivers or [],
+		'peak_periods': json.dumps(peak_periods or {}),
+	}
+	
+	return render(request, 'dashboard/operationalDashboards.html', context)
